@@ -30,7 +30,7 @@ jobs:
 
     - name: Wait for MySQL to be ready
       run: |
-        until mysql -h 127.0.0.1 -u root -p Test_12345!? -e "SHOW TABLES IN videothek"; do
+        until mysql -h 127.0.0.1 -u root -pTest_12345!? -e "SHOW TABLES IN videothek"; do
           echo "Waiting for MySQL..."
           sleep 10
         done
