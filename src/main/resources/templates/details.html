@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${film.name}"></title>
+</head>
+<body>
+
+<font size ="7"><h1 align="center" th:text="${film.name}"></h1></font>
+<font size ="7"><p align="center" th:text="${film.description}"></p></font>
+<font size ="5"><p align="center" th:text="'Länge: '+ ${film.laenge} + 'min'"></p></font>
+
+<div class="play">
+<button class="playButton">Play</button>
+</div>
+
+<div class="addtoPlaylist">
+    <form action="/saveFilmPlaylist">
+        <input style="display:none;" type="text" name="id" th:value="${film.id}"><br>
+        <input style="display:none;" type="text" name="name" th:value="${film.name}"><br>
+        <input style="display:none;" type="text" name="description" th:value="${film.description}"><br>
+        <input style="display:none;" type="number" name="laenge" th:value="${film.laenge}"><br>
+        <input type="submit" name="Add to MyList" VALUE="Add to MyList"><br>
+    </form>
+</div>
+
+<font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
+
+<style>
+    .back{
+        position: absolute;
+        bottom: 1.25rem; left:1.25rem;
+    }
+    .play{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .playButton {
+        font-size: 50px;
+        width: 200px;
+        height: 100px;
+    }
+    .addtoPlaylist{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+
+</body>
+</html>

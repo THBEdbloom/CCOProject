@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${playlist.name}"></title>
+</head>
+<body>
+
+<font size ="7"><h1 align="center" th:text="${playlist.name}"></h1></font>
+<font size ="7"><p align="center" th:text="${playlist.description}"></p></font>
+<font size ="5"><p align="center" th:text="'Länge: '+ ${playlist.laenge} + 'min'"></p></font>
+  <datalist id="film">
+    <li th:each="film: ${films}">
+      <option th:text="${film.name}"></option>
+    </li>
+  </datalist>
+
+<div class="play">
+  <button class="playButton">Play</button>
+</div>
+<div class="play">
+  <button class="shareButton" onclick="myFunction()">Share</button>
+</div>
+
+<div class="popup">
+  <span class="popuptext" id="myPopup" th:with="url=${#httpServletRequest.requestURL}" th:text="${url}"></span>
+</div>
+
+<div class="deleteFromPlaylist">
+  <form action="/deleteFilmPlaylist">
+    <input style="display:none;" type="text" name="id" th:value="${playlist.id}"><br>
+    <input style="display:none;" type="text" name="name" th:value="${playlist.name}"><br>
+    <input style="display:none;" type="text" name="description" th:value="${playlist.description}"><br>
+    <input style="display:none;" type="number" name="laenge" th:value="${playlist.laenge}"><br>
+    <input type="submit" name="delete from MyList" VALUE="delete from MyList"><br>
+  </form>
+</div>
+
+<font size ="10"><p align="right"><a th:href="@{/playlist}" class="back">Back</a></p></font>
+
+<script>
+
+  function myFunction() {
+    var popup = document.getElementById("myPopup");
+    popup.classList.toggle("show");
+  }
+
+</script>
+
+<style>
+  .back{
+    position: absolute;
+    bottom: 1.25rem; left:1.25rem;
+  }
+  .play{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .playButton {
+    font-size: 50px;
+    width: 200px;
+    height: 100px;
+  }
+  .shareButton {
+    font-size: 25px;
+    width: 200px;
+    height: 50px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .popup {
+    position: absolute;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .popup .popuptext {
+    visibility: hidden;
+    width: fit-content;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    margin-left: 850px;
+  }
+
+  .popup .show {
+    visibility: visible;
+  }
+
+  .deleteFromPlaylist{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+</style>
+
+</body>
+</html>

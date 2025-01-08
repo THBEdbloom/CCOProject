@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Film</title>
+</head>
+<body>
+<div class="form">
+    <form action="/saveFilm">
+        <label>Input Title:</label>
+        <input type="text" name="name" value="name"><br>
+        <label>Input Description:</label>
+        <input type="text" name="description"><br>
+        <label>Input Length:</label>
+        <input type="number" name="laenge" value="200"><br>
+        <input type="submit" name="Save" value="Add Video"><br>
+    </form>
+</div>
+    <font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
+
+    <style>
+        .back{
+            position: absolute;
+            bottom: 1.25rem; left:1.25rem;
+        }
+        .form{
+            display: flex;
+            position: center;
+            justify-content: center;
+            margin-top: 200px;
+        }
+    </style>
+</body>
+</html>

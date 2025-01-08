@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Videothek</title>
+</head>
+<body>
+
+<font size ="10"><center><h1>Videothek</h1></center></font>
+<font size ="10"><p align="center"><a th:href="@{/playlist}" class="back" type="button">MyList</a></p></font>
+    <font size="5">
+<div class="search-box" align="center">
+
+    <font size="10">
+<label>Film suchen:</label></br>
+    </font>
+
+<input class="search-txt" type="text" id="suche" placeholder="Suche..." list="film" name=" " size="50" onkeydown="Event_Key();" style="height: 30px; font-size: 12pt;">
+
+        <datalist id="film">
+            <li style="list-style: none;" th:each="film: ${films}">
+                <option th:text="${film.name}"></option>
+            </li>
+        </datalist>
+        <a class="search-btn" href="#" onclick="suchen()">
+            <i class="fas fa-search"></i>
+        </a>
+</div>
+        <script type="text/javascript">
+            function suchen(){
+
+                var options = document.getElementById('film').getElementsByTagName('option');
+                var s = document.getElementById("suche").value;
+
+                for (let i = 0; i < options.length; i += 1) {
+                    if(options[i].value === s) {
+                        window.location = "http://localhost:8080/filmsName/" + s;
+                        return;
+                    }
+                }
+            }
+
+            function Event_Key(){
+                if(event.keyCode === 13){
+                   suchen();
+                }
+            }
+        </script>
+    </font>
+<font size ="6">
+    <font size ="7"><h2 align="center">Recommended:</h2></font>
+    <div align="center">
+<ul>
+    <li style="list-style: none;" th:each="film: ${films}" th:if="${film.id <= 20}">
+        <a th:href="@{filmsId/{id}(id=${film.id})}"
+           th:text="${film.name}"></a>
+    </li>
+</ul>
+    </div>
+        <a th:href="@{/addfilm}">
+            <button class="addButton" type="button">Add Film</button>
+        </a>
+</font>
+<style>
+
+    .addButton{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 25px;
+        width: 150px;
+        height: 75px;
+    }
+</style>
+</body>
+</html>

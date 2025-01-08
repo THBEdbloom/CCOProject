@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MyList</title>
+</head>
+<body>
+<font size ="10"><center><h1>My List</h1></center></font>
+<font size="5">
+  <div class="search-box" align="center">
+
+    <font size="10">
+      <label>Playlist durchsuchen:</label></br>
+    </font>
+
+    <input class="search-txt" type="text" id="suche" placeholder="Suche..." list="film" name=" " size="50" onkeydown="Event_Key();" style="height: 30px; font-size: 12pt;">
+
+    <datalist id="film">
+      <li th:each="playlistFilm: ${playlists}">
+        <option th:text="${playlistFilm.name}"></option>
+      </li>
+    </datalist>
+    <a class="search-btn" href="#" onclick="suchen()">
+      <i class="fas fa-search"></i>
+    </a>
+  </div>
+  <script type="text/javascript">
+    function suchen(){
+
+      var options = document.getElementById('film').getElementsByTagName('option');
+      var s = document.getElementById("suche").value;
+
+      for (let i = 0; i < options.length; i += 1) {
+        if(options[i].value === s) {
+          window.location = "http://localhost:8080/playlistName/" + s;
+          return;
+        }
+      }
+    }
+
+    function Event_Key(){
+      if(event.keyCode === 13){
+        suchen();
+      }
+    }
+  </script>
+</font>
+<font size ="6">
+  <div align="center">
+    <ul>
+      <li th:each="playlistFilm: ${playlists}" th:if="${playlistFilm.id <= 20}">
+        <a th:href="@{playlistId/{id}(id=${playlistFilm.id})}"
+           th:text="${playlistFilm.name}"></a>
+      </li>
+    </ul>
+  </div>
+
+  <font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
+
+  <style>
+    .back {
+      position: absolute;
+      bottom: 1.25rem; left: 1.25rem;
+    }
+  </style>
+
+</font>
+</body>
+</html>
