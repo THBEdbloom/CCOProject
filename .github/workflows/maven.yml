@@ -45,7 +45,7 @@ jobs:
         cache: maven
 
     - name: Wait for MySQL to be ready
-      run: sleep 30  # Längere Wartezeit
+      run: sleep 30
 
     - name: Set environment variables
       run: |
@@ -54,5 +54,5 @@ jobs:
         echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
 
     - name: Build with Maven
-      run: mvn -B clean install -Dspring.profiles.active=test -X  # Optional: Debugging aktivieren
+      run: mvn -B clean install -Dspring.profiles.active=test
 
