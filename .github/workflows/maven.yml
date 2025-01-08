@@ -47,29 +47,12 @@ jobs:
     - name: Wait for MySQL to be ready
       run: sleep 30
 
-    # Schritt zur Überprüfung der Umgebungsvariablen
-    - name: Print environment variables
-      run: |
-        echo "SPRING_DATASOURCE_URL=$SPRING_DATASOURCE_URL"
-        echo "SPRING_DATASOURCE_USERNAME=$SPRING_DATASOURCE_USERNAME"
-        echo "SPRING_DATASOURCE_PASSWORD=$SPRING_DATASOURCE_PASSWORD"
-
     # MySQL-Verbindung überprüfen und Tabellen auflisten
     - name: Check MySQL connection and list tables
       run: |
         mysql -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW TABLES IN videothek;" || \
         mysql -h 127.0.0.1 -u root -pTest_12345!? -e "SHOW TABLES IN videothek;"  # Wenn das Passwort nicht gesetzt ist, manuell festlegen
-
-    - name: Print MYSQL_ROOT_PASSWORD
-      run: echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
-
-    # Schritt, um das Hibernate SQL-Protokoll zu aktivieren
-    - name: Set Hibernate SQL logging
-      run: |
-        echo "spring.jpa.properties.hibernate.show_sql=true" >> src/test/resources/application-test.properties
-        echo "spring.jpa.properties.hibernate.format_sql=true" >> src/test/resources/application-test.properties
-        echo "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect" >> src/test/resources/application-test.properties
-
+        
     # Schritt zum Setzen von Umgebungsvariablen für Spring
     - name: Set environment variables for Spring
       run: |
@@ -79,5 +62,5 @@ jobs:
 
     # Build mit Maven und den entsprechenden Profilen
     - name: Build with Maven
-      run: mvn -B clean install -Dspring.profiles.active=test -X  # Optional: Debugging aktivieren
+      run: mvn -B clean install -Dspring.profiles.active=test
 
