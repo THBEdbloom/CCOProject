@@ -24,7 +24,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testdb
+          MYSQL_DATABASE: Test_12345!?
         ports:
           - 3306:3306
         options: >-
@@ -48,10 +48,10 @@ jobs:
       run: sleep 15
 
     - name: Set environment variables
-      run: echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/testdb" >> $GITHUB_ENV
+      run: echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
       env:
         SPRING_DATASOURCE_USERNAME: root
-        SPRING_DATASOURCE_PASSWORD: root
+        SPRING_DATASOURCE_PASSWORD: Test_12345!?
 
     - name: Build with Maven
       run: mvn -B clean install -Dspring.profiles.active=test
