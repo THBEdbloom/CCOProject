@@ -57,7 +57,11 @@ jobs:
     # MySQL-Verbindung überprüfen und Tabellen auflisten
     - name: Check MySQL connection and list tables
       run: |
-        mysql -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW TABLES IN videothek;"
+        mysql -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW TABLES IN videothek;" || \
+        mysql -h 127.0.0.1 -u root -pTest_12345!? -e "SHOW TABLES IN videothek;"  # Wenn das Passwort nicht gesetzt ist, manuell festlegen
+
+    - name: Print MYSQL_ROOT_PASSWORD
+      run: echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
 
     # Schritt, um das Hibernate SQL-Protokoll zu aktivieren
     - name: Set Hibernate SQL logging
