@@ -1,3 +1,11 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
 name: Java CI with Maven
 
 on:
@@ -8,6 +16,7 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     services:
@@ -36,11 +45,7 @@ jobs:
         cache: maven
 
     - name: Wait for MySQL to be ready
-      run: |
-        until mysqladmin ping --host=localhost --user=root --password=Test_12345!? --silent; do
-          echo "Waiting for MySQL to be ready..."
-          sleep 2
-        done
+      run: sleep 15
 
     - name: Set environment variables
       run: echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
