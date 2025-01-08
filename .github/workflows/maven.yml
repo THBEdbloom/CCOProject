@@ -45,13 +45,14 @@ jobs:
         cache: maven
 
     - name: Wait for MySQL to be ready
-      run: sleep 15
+      run: sleep 30  # Längere Wartezeit
 
     - name: Set environment variables
-      run: echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
-      env:
-        SPRING_DATASOURCE_USERNAME: root
-        SPRING_DATASOURCE_PASSWORD: Test_12345!?
+      run: |
+        echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
+        echo "SPRING_DATASOURCE_USERNAME=root" >> $GITHUB_ENV
+        echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
 
     - name: Build with Maven
-      run: mvn -B clean install -Dspring.profiles.active=test
+      run: mvn -B clean install -Dspring.profiles.active=test -X  # Optional: Debugging aktivieren
+
