@@ -14,11 +14,6 @@ RUN apt-get install -y maven
 # Kopiere die JAR-Datei von deinem lokalen Build in das Image
 ADD ./target/videothek-0.0.1-SNAPSHOT.jar /service.jar
 
-# Setze Umgebungsvariablen für die Datenbankverbindung (optional)
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/videothek
-ENV SPRING_DATASOURCE_USERNAME=root
-ENV SPRING_DATASOURCE_PASSWORD=Test_12345!?
-
 # Exponiere den Port, auf dem die Anwendung läuft
 EXPOSE 8080
 
