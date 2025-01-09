@@ -1,4 +1,4 @@
-name: Build, Analyze, Dockerize and Push to DockerHub
+name: Build, Analyze with PMD and SonarCloud, Dockerize and Push to DockerHub
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Für bessere Analyse durch SonarCloud
+          fetch-depth: 0  # Für bessere Analyse durch SonarCloud und PMD
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -56,6 +56,16 @@ jobs:
           echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_USERNAME=root" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
+
+      - name: Run PMD Analysis
+        run: |
+          mvn pmd:pmd pmd:cpd
+
+      - name: Upload PMD Report (Optional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: pmd-report
+          path: target/site/pmd.html
 
       - name: Build with Maven and Analyze with SonarCloud
         env:
