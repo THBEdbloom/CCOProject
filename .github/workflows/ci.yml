@@ -59,11 +59,3 @@ jobs:
     - name: Push Docker image for app
       run: |
         docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/app-repository:latest
-
-    - name: Build Docker image for MySQL
-      run: |
-        docker build . --file Dockerfile.mysql --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/mysql-repository:latest
-
-    - name: Push Docker image for MySQL
-      run: |
-        docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/mysql-repository:latest
