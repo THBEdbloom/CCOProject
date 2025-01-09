@@ -1,12 +1,4 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: Build, Dockerize and Push to DockerHub
 
 on:
   push:
@@ -57,4 +49,21 @@ jobs:
         echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
 
     - name: Build with Maven
-      run: mvn -B verify --file pom.xml
+      run: mvn -B package --file pom.xml
+
+    - name: Build Docker image for app
+      run: |
+        echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/app-repository:latest
+
+    - name: Push Docker image for app
+      run: |
+        docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/app-repository:latest
+
+    - name: Build Docker image for MySQL
+      run: |
+        docker build . --file Dockerfile.mysql --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/mysql-repository:latest
+
+    - name: Push Docker image for MySQL
+      run: |
+        docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/mysql-repository:latest
