@@ -3,7 +3,7 @@ name: Build, Dockerize and Push to DockerHub
 on:
   push:
     branches: [ "main" ]
-  pull_request: 
+  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
         echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B verify --file pom.xml
 
     - name: Build Docker image for app
       run: |
