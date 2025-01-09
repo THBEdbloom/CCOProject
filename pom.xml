@@ -89,6 +89,26 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Beginn: PMD Plugin Konfigurtion -->
+		        <plugin>
+		            <groupId>org.apache.maven.plugins</groupId>
+		            <artifactId>maven-pmd-plugin</artifactId>
+		            <version>3.26.0</version>
+		            <configuration>
+		                <!-- failOnViolation is actually true by default, but can be disabled -->
+		                <failOnViolation>true</failOnViolation>
+		                <!-- printFailingErrors is pretty useful -->
+		           	<printFailingErrors>true</printFailingErrors>
+			    </configuration>
+		            <executions>
+		                <execution>
+		                    <goals>
+		                        <goal>check</goal>
+		                    </goals>
+		                </execution>
+		            </executions>
+		        </plugin>
+			<!-- Ende: PMD Plugin Konfiguration -->
 		</plugins>
 	</build>
 </project>
