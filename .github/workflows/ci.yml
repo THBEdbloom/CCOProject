@@ -3,7 +3,7 @@ name: Build, Dockerize and Push to DockerHub
 on:
   push:
     branches: [ "main" ]
-  pull_request:
+  pull_request: 
     branches: [ "main" ]
 
 jobs:
