@@ -1,4 +1,4 @@
-name: Build, Dockerize and Push to DockerHub
+name: Build, Analyze, Dockerize and Push to DockerHub
 
 on:
   push:
@@ -25,37 +25,54 @@ jobs:
           --health-retries=3
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Für bessere Analyse durch SonarCloud
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Wait for MySQL to be ready
-      run: |
-        until mysql -h 127.0.0.1 -u root -pTest_12345!? -e "SHOW TABLES IN videothek"; do
-          echo "Waiting for MySQL..."
-          sleep 30
-        done
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
-    - name: Set environment variables
-      run: |
-        echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
-        echo "SPRING_DATASOURCE_USERNAME=root" >> $GITHUB_ENV
-        echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysql -h 127.0.0.1 -u root -pTest_12345!? -e "SHOW TABLES IN videothek"; do
+            echo "Waiting for MySQL..."
+            sleep 30
+          done
 
-    - name: Build with Maven
-      run: mvn -B verify --file pom.xml
+      - name: Set environment variables
+        run: |
+          echo "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/videothek" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_USERNAME=root" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_PASSWORD=Test_12345!?" >> $GITHUB_ENV
 
-    - name: Build Docker image for app
-      run: |
-        echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-        docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:app
+      - name: Build with Maven and Analyze with SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B verify \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=THBEdbloom_CCOProject \
+            -Dsonar.organization=your-sonarcloud-organization \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-    - name: Push Docker image for app
-      run: |
-        docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:app
+      - name: Build Docker image for app
+        run: |
+          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:app
+
+      - name: Push Docker image for app
+        run: |
+          docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:app
