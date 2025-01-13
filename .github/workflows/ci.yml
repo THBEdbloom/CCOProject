@@ -60,12 +60,16 @@ jobs:
       - name: Run PMD Analysis
         run: |
           mvn pmd:pmd pmd:cpd
-
-      - name: Upload PMD Report (Optional)
+          
+      - name: Upload PMD Report
         uses: actions/upload-artifact@v3
         with:
           name: pmd-report
-          path: target/site/pmd.html
+          path: |
+            target/pmd.xml
+            target/cpd.xml
+            target/pmd//*
+            target/reports//*
 
       - name: Build with Maven and Analyze with SonarCloud
         env:
