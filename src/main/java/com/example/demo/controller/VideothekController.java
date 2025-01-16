@@ -23,7 +23,10 @@ public class VideothekController {
     FilmRepository filmRepo;
     PlaylistRepository playlRepo;
 
-
+    @GetMapping("/")
+    public String redirectToStartPage(){
+        return "redirect:/videothek";
+    }
     /**
      * http://localhost:8080/addfilm
      */
