@@ -1,106 +1,78 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-  <meta charset="UTF-8">
   <title th:text="${playlist.name}"></title>
 </head>
 <body>
+<main layout:fragment="content">
+  <div class="min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="bg-white rounded-xl shadow-lg p-8 space-y-8 w-full max-w-2xl">
+      <div class="text-center">
+        <h1 class="text-4xl font-bold" th:text="${playlist.name}"></h1>
+        <p class="text-2xl mt-4" th:text="${playlist.description}"></p>
+        <p class="text-xl mt-2" th:text="'Länge: ' + ${playlist.laenge} + 'min'"></p>
+      </div>
 
-<font size ="7"><h1 align="center" th:text="${playlist.name}"></h1></font>
-<font size ="7"><p align="center" th:text="${playlist.description}"></p></font>
-<font size ="5"><p align="center" th:text="'Länge: '+ ${playlist.laenge} + 'min'"></p></font>
-  <datalist id="film">
-    <li th:each="film: ${films}">
-      <option th:text="${film.name}"></option>
-    </li>
-  </datalist>
+      <datalist id="film">
+        <option th:each="film: ${films}" th:text="${film.name}"></option>
+      </datalist>
 
-<div class="play">
-  <button class="playButton">Play</button>
-</div>
-<div class="play">
-  <button class="shareButton" onclick="myFunction()">Share</button>
-</div>
+      <div class="flex flex-col items-center space-y-6">
+        <div>
+          <button class="bg-blue-500 hover:bg-blue-600 text-white text-3xl px-12 py-6 rounded-lg transition-colors">
+            Play
+          </button>
+        </div>
 
-<div class="popup">
-  <span class="popuptext" id="myPopup" th:with="url=${#httpServletRequest.requestURL}" th:text="${url}"></span>
-</div>
+        <div>
+          <button onclick="myFunction()"
+                  class="bg-purple-500 hover:bg-purple-600 text-white text-xl px-12 py-3 rounded-lg transition-colors">
+            Share
+          </button>
+        </div>
 
-<div class="deleteFromPlaylist">
-  <form action="/deleteFilmPlaylist">
-    <input style="display:none;" type="text" name="id" th:value="${playlist.id}"><br>
-    <input style="display:none;" type="text" name="name" th:value="${playlist.name}"><br>
-    <input style="display:none;" type="text" name="description" th:value="${playlist.description}"><br>
-    <input style="display:none;" type="number" name="laenge" th:value="${playlist.laenge}"><br>
-    <input type="submit" name="delete from MyList" VALUE="delete from MyList"><br>
-  </form>
-</div>
+        <div class="relative">
+          <span id="myPopup"
+                th:with="url=${#httpServletRequest.requestURL}"
+                th:text="${url}"
+                class="hidden absolute left-1/2 -translate-x-1/2 bg-gray-700 text-white px-4 py-2 rounded-md whitespace-nowrap">
+          </span>
+        </div>
 
-<font size ="10"><p align="right"><a th:href="@{/playlist}" class="back">Back</a></p></font>
+        <div>
+          <form action="/deleteFilmPlaylist" class="flex justify-center">
+            <input type="hidden" name="id" th:value="${playlist.id}">
+            <input type="hidden" name="name" th:value="${playlist.name}">
+            <input type="hidden" name="description" th:value="${playlist.description}">
+            <input type="hidden" name="laenge" th:value="${playlist.laenge}">
+            <button type="submit"
+                    class="bg-red-500 hover:bg-red-600 text-white text-xl px-8 py-3 rounded-lg transition-colors">
+              Delete from MyList
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
 
-<script>
+    <a th:href="@{/playlist}"
+       class="fixed bottom-5 left-5 text-blue-500 text-2xl hover:text-blue-700 transition-colors">
+      Back
+    </a>
+  </div>
 
-  function myFunction() {
-    var popup = document.getElementById("myPopup");
-    popup.classList.toggle("show");
-  }
+  <script>
+    function myFunction() {
+      const popup = document.getElementById("myPopup");
+      popup.classList.toggle("hidden");
 
-</script>
-
-<style>
-  .back{
-    position: absolute;
-    bottom: 1.25rem; left:1.25rem;
-  }
-  .play{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .playButton {
-    font-size: 50px;
-    width: 200px;
-    height: 100px;
-  }
-  .shareButton {
-    font-size: 25px;
-    width: 200px;
-    height: 50px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-  }
-
-  .popup {
-    position: absolute;
-    display: inline-block;
-    cursor: pointer;
-  }
-
-  .popup .popuptext {
-    visibility: hidden;
-    width: fit-content;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 8px 0;
-    position: absolute;
-    z-index: 1;
-    margin-left: 850px;
-  }
-
-  .popup .show {
-    visibility: visible;
-  }
-
-  .deleteFromPlaylist{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-
-</style>
-
+      setTimeout(() => {
+        popup.classList.add("hidden");
+      }, 3000);
+    }
+  </script>
+</main>
 </body>
 </html>

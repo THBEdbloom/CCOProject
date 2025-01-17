@@ -1,52 +1,52 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
     <title th:text="${film.name}"></title>
 </head>
 <body>
+<main layout:fragment="content">
+    <div class="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
+            <div class="space-y-4 border-b border-gray-100 pb-6">
+                <h1 class="text-4xl font-bold text-center text-gray-800" th:text="${film.name}"></h1>
+                <p class="text-2xl text-center text-gray-600" th:text="${film.description}"></p>
+                <div class="flex justify-center">
+                    <span class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-lg"
+                          th:text="'Länge: ' + ${film.laenge} + ' min'">
+                    </span>
+                </div>
+            </div>
 
-<font size ="7"><h1 align="center" th:text="${film.name}"></h1></font>
-<font size ="7"><p align="center" th:text="${film.description}"></p></font>
-<font size ="5"><p align="center" th:text="'Länge: '+ ${film.laenge} + 'min'"></p></font>
+            <div class="space-y-6 pt-4">
+                <div class="flex justify-center">
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white text-2xl px-12 py-4 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        Play
+                    </button>
+                </div>
 
-<div class="play">
-<button class="playButton">Play</button>
-</div>
+                <div class="flex justify-center">
+                    <form action="/saveFilmPlaylist">
+                        <input type="hidden" name="id" th:value="${film.id}">
+                        <input type="hidden" name="name" th:value="${film.name}">
+                        <input type="hidden" name="description" th:value="${film.description}">
+                        <input type="hidden" name="laenge" th:value="${film.laenge}">
+                        <button type="submit"
+                                class="bg-green-500 hover:bg-green-600 text-white text-xl px-8 py-3 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            Add to MyList
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-<div class="addtoPlaylist">
-    <form action="/saveFilmPlaylist">
-        <input style="display:none;" type="text" name="id" th:value="${film.id}"><br>
-        <input style="display:none;" type="text" name="name" th:value="${film.name}"><br>
-        <input style="display:none;" type="text" name="description" th:value="${film.description}"><br>
-        <input style="display:none;" type="number" name="laenge" th:value="${film.laenge}"><br>
-        <input type="submit" name="Add to MyList" VALUE="Add to MyList"><br>
-    </form>
-</div>
-
-<font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
-
-<style>
-    .back{
-        position: absolute;
-        bottom: 1.25rem; left:1.25rem;
-    }
-    .play{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .playButton {
-        font-size: 50px;
-        width: 200px;
-        height: 100px;
-    }
-    .addtoPlaylist{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-</style>
-
+        <a th:href="@{/videothek}"
+           class="fixed bottom-5 left-5 bg-white px-6 py-2 rounded-lg shadow-md text-blue-500 text-xl hover:text-blue-700 hover:shadow-lg transition-all">
+            ← Back
+        </a>
+    </div>
+</main>
 </body>
 </html>

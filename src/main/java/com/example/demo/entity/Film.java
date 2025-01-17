@@ -11,7 +11,6 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-
 public class Film {
 
     @Id
@@ -23,5 +22,7 @@ public class Film {
     private String name;
     private String description;
 
+    @Column(length = 255)
+    private String videoKey;
 
 }

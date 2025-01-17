@@ -1,34 +1,81 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
     <title>Add Film</title>
 </head>
 <body>
-<div class="form">
-    <form action="/saveFilm">
-        <label>Input Title:</label>
-        <input type="text" name="name" value="name"><br>
-        <label>Input Description:</label>
-        <input type="text" name="description"><br>
-        <label>Input Length:</label>
-        <input type="number" name="laenge" value="200"><br>
-        <input type="submit" name="Save" value="Add Video"><br>
-    </form>
-</div>
-    <font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
+<main layout:fragment="content">
+    <div class="flex justify-center items-center min-h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <!-- Success Message -->
+            <div th:if="${message}" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
+                <p th:text="${message}"></p>
+                <a th:if="${fileUrl}" th:href="${fileUrl}"
+                   class="text-blue-500 hover:text-blue-700 underline"
+                   target="_blank">View uploaded file</a>
+            </div>
 
-    <style>
-        .back{
-            position: absolute;
-            bottom: 1.25rem; left:1.25rem;
-        }
-        .form{
-            display: flex;
-            position: center;
-            justify-content: center;
-            margin-top: 200px;
-        }
-    </style>
+            <form action="/saveFilm" method="post" enctype="multipart/form-data" class="space-y-4">
+                <div class="flex flex-col">
+                    <label class="text-gray-700 mb-1">Input Title:</label>
+                    <input type="text" name="name" required
+                           class="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-gray-700 mb-1">Input Description:</label>
+                    <input type="text" name="description" required
+                           class="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-gray-700 mb-1">Input Length:</label>
+                    <input type="number" name="laenge" value="200" required
+                           class="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-gray-700 mb-1">Upload Video File:</label>
+                    <input type="file" name="file" required
+                           accept="video/*"
+                           class="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-sm text-gray-500 mt-1">Supported formats: MP4, MOV, AVI</p>
+                </div>
+
+                <!-- File Preview -->
+                <div id="preview" class="hidden">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Selected File:</h3>
+                    <div id="previewContent" class="text-sm text-gray-600 bg-gray-50 p-2 rounded-md"></div>
+                </div>
+
+                <button type="submit" name="Save" value="Add Video"
+                        class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
+                    Add Video
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <a th:href="@{/videothek}" class="fixed bottom-5 left-5 text-blue-500 text-2xl hover:text-blue-700">Back</a>
+
+    <script>
+        document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('preview');
+            const previewContent = document.getElementById('previewContent');
+
+            if (file) {
+                preview.classList.remove('hidden');
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                previewContent.textContent = `${file.name} (${sizeMB} MB)`;
+            } else {
+                preview.classList.add('hidden');
+            }
+        });
+    </script>
+</main>
 </body>
 </html>

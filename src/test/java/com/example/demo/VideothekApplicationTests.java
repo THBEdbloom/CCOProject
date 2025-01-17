@@ -47,7 +47,7 @@ class VideothekApplicationTests {
     @Test
     void testGetFilmById() {
         // Arrange
-        Film film = new Film(1, 120, "TestFilm", "Description");
+        Film film = new Film(1, 120, "TestFilm", "Description", "random_video_key");
         when(filmRepository.findById(1L)).thenReturn(Optional.of(film));
 
         // Act
@@ -62,7 +62,7 @@ class VideothekApplicationTests {
     @Test
     void testGetFilmByName() {
         // Arrange
-        Film film = new Film(1, 120, "TestFilm", "Description");
+        Film film = new Film(1, 120, "TestFilm", "Description", "random_video_key");
         when(filmRepository.findByName("TestFilm")).thenReturn(Optional.of(film));
 
         // Act
@@ -77,8 +77,8 @@ class VideothekApplicationTests {
     @Test
     void testGetAllFilms() {
         // Arrange
-        Film film1 = new Film(1, 120, "Film1", "Desc1");
-        Film film2 = new Film(2, 90, "Film2", "Desc2");
+        Film film1 = new Film(1, 120, "Film1", "Desc1", "random_video_key");
+        Film film2 = new Film(2, 90, "Film2", "Desc2", "random_video_key");
         when(filmRepository.findAll()).thenReturn(List.of(film1, film2));
 
         // Act

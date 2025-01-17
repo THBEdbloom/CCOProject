@@ -1,52 +1,98 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
     <title th:text="${film.name}"></title>
 </head>
 <body>
+<main layout:fragment="content">
+    <div class="min-h-screen flex flex-col items-center justify-center p-6">
+        <div class="bg-white rounded-xl shadow-lg p-8 space-y-8 w-full max-w-2xl">
+            <div class="text-center space-y-4">
+                <h1 class="text-4xl font-bold" th:text="${film.name}"></h1>
+                <p class="text-2xl" th:text="${film.description}"></p>
+                <p class="text-xl" th:text="'Länge: ' + ${film.laenge} + 'min'"></p>
+            </div>
 
-<font size ="7"><h1 align="center" th:text="${film.name}"></h1></font>
-<font size ="7"><p align="center" th:text="${film.description}"></p></font>
-<font size ="5"><p align="center" th:text="'Länge: '+ ${film.laenge} + 'min'"></p></font>
+            <div class="w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+                <video
+                        class="w-full h-full"
+                        controls
+                        id="videoPlayer"
+                        th:data-video-key="${film.videoKey}">
+                </video>
+            </div>
 
-<div class="play">
-<button class="playButton">Play</button>
-</div>
+            <div class="flex flex-col items-center space-y-6">
+                <div>
+                    <button onclick="playVideo()"
+                            class="bg-blue-500 hover:bg-blue-600 text-white text-3xl px-12 py-6 rounded-lg transition-colors">
+                        Play
+                    </button>
+                </div>
 
-<div class="addtoPlaylist">
-    <form action="/saveFilmPlaylist">
-        <input style="display:none;" type="text" name="id" th:value="${film.id}"><br>
-        <input style="display:none;" type="text" name="name" th:value="${film.name}"><br>
-        <input style="display:none;" type="text" name="description" th:value="${film.description}"><br>
-        <input style="display:none;" type="number" name="laenge" th:value="${film.laenge}"><br>
-        <input type="submit" name="Add to MyList" VALUE="Add to MyList"><br>
-    </form>
-</div>
+                <div>
+                    <form action="/saveFilmPlaylist" class="flex justify-center">
+                        <input type="hidden" name="id" th:value="${film.id}">
+                        <input type="hidden" name="name" th:value="${film.name}">
+                        <input type="hidden" name="description" th:value="${film.description}">
+                        <input type="hidden" name="laenge" th:value="${film.laenge}">
+                        <button type="submit"
+                                class="bg-green-500 hover:bg-green-600 text-white text-xl px-8 py-3 rounded-lg transition-colors">
+                            Add to MyList
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-<font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
+        <a th:href="@{/videothek}"
+           class="fixed bottom-5 left-5 text-blue-500 text-2xl hover:text-blue-700 transition-colors">
+            Back
+        </a>
+    </div>
 
-<style>
-    .back{
-        position: absolute;
-        bottom: 1.25rem; left:1.25rem;
-    }
-    .play{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .playButton {
-        font-size: 50px;
-        width: 200px;
-        height: 100px;
-    }
-    .addtoPlaylist{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-</style>
+    <script th:inline="javascript">
+        let videoPlayer = document.getElementById('videoPlayer');
 
+        async function playVideo() {
+            try {
+                const videoKey = videoPlayer.dataset.videoKey;
+                const response = await fetch(`/files/${videoKey}/url`);
+                if (!response.ok) throw new Error('Failed to get video URL');
+
+                const presignedUrl = await response.text();
+
+                const source = document.createElement('source');
+                source.src = presignedUrl;
+                source.type = 'video/mp4';
+
+                while (videoPlayer.firstChild) {
+                    videoPlayer.removeChild(videoPlayer.firstChild);
+                }
+
+                videoPlayer.appendChild(source);
+
+                videoPlayer.load();
+                videoPlayer.play();
+            } catch (error) {
+                console.error('Error playing video:', error);
+                alert('Error playing video. Please try again.');
+            }
+        }
+
+        playVideo();
+
+        setInterval(async () => {
+            if (!videoPlayer.paused) {
+                const currentTime = videoPlayer.currentTime;
+                await playVideo();
+                videoPlayer.currentTime = currentTime;
+            }
+        }, 3300000);
+    </script>
+</main>
 </body>
 </html>

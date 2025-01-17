@@ -1,34 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-  <meta charset="UTF-8">
   <title>MyList</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<font size ="10"><center><h1>My List</h1></center></font>
-<font size="5">
-  <div class="search-box" align="center">
+<main layout:fragment="content">
+  <div class="min-h-screen p-8">
+    <h1 class="text-4xl font-bold text-center mb-12">My List</h1>
 
-    <font size="10">
-      <label>Playlist durchsuchen:</label></br>
-    </font>
+    <div class="max-w-2xl mx-auto mb-12">
+      <div class="text-center mb-4">
+        <label for="suche" class="text-3xl block mb-4">
+          Playlist durchsuchen:
+        </label>
+      </div>
 
-    <input class="search-txt" type="text" id="suche" placeholder="Suche..." list="film" name=" " size="50" onkeydown="Event_Key();" style="height: 30px; font-size: 12pt;">
+      <div class="flex items-center justify-center gap-2">
+        <input class="w-full px-4 py-2 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+               type="text"
+               id="suche"
+               placeholder="Suche..."
+               list="film"
+               onkeydown="Event_Key();">
 
-    <datalist id="film">
-      <li th:each="playlistFilm: ${playlists}">
-        <option th:text="${playlistFilm.name}"></option>
-      </li>
-    </datalist>
-    <a class="search-btn" href="#" onclick="suchen()">
-      <i class="fas fa-search"></i>
+        <button onclick="suchen()"
+                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+
+      <datalist id="film">
+        <option th:each="playlistFilm: ${playlists}"
+                th:text="${playlistFilm.name}">
+        </option>
+      </datalist>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+      <ul class="space-y-3 text-center">
+        <li th:each="playlistFilm: ${playlists}"
+            th:if="${playlistFilm.id <= 20}"
+            class="hover:bg-gray-50 py-2 rounded-lg transition-colors">
+          <a th:href="@{playlistId/{id}(id=${playlistFilm.id})}"
+             th:text="${playlistFilm.name}"
+             class="text-xl text-blue-500 hover:text-blue-700 transition-colors">
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <a th:href="@{/videothek}"
+       class="fixed bottom-5 left-5 text-blue-500 text-2xl hover:text-blue-700 transition-colors">
+      Back
     </a>
   </div>
-  <script type="text/javascript">
-    function suchen(){
 
-      var options = document.getElementById('film').getElementsByTagName('option');
-      var s = document.getElementById("suche").value;
+  <script type="text/javascript">
+    function suchen() {
+      let options = document.getElementById('film').getElementsByTagName('option');
+      let s = document.getElementById("suche").value;
 
       for (let i = 0; i < options.length; i += 1) {
         if(options[i].value === s) {
@@ -38,32 +72,12 @@
       }
     }
 
-    function Event_Key(){
-      if(event.keyCode === 13){
+    function Event_Key() {
+      if(event.keyCode === 13) {
         suchen();
       }
     }
   </script>
-</font>
-<font size ="6">
-  <div align="center">
-    <ul>
-      <li th:each="playlistFilm: ${playlists}" th:if="${playlistFilm.id <= 20}">
-        <a th:href="@{playlistId/{id}(id=${playlistFilm.id})}"
-           th:text="${playlistFilm.name}"></a>
-      </li>
-    </ul>
-  </div>
-
-  <font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Back</a></p></font>
-
-  <style>
-    .back {
-      position: absolute;
-      bottom: 1.25rem; left: 1.25rem;
-    }
-  </style>
-
-</font>
+</main>
 </body>
 </html>

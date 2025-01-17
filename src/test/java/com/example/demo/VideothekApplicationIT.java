@@ -37,7 +37,7 @@ class VideothekApplicationIT {
     @Test
     void testGetAllFilmsIntegration() {
         // Arrange
-        Film film = new Film(0, 120, "TestFilm", "Description");
+        Film film = new Film(0, 120, "TestFilm", "Description", "random_video_key");
         filmRepository.save(film);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -57,7 +57,7 @@ class VideothekApplicationIT {
     @Test
     void testGetFilmByIdIntegration() {
         // Arrange
-        Film film = new Film(0, 90, "FilmById", "Description");
+        Film film = new Film(0, 90, "FilmById", "Description", "random_video_key");
         Film savedFilm = filmRepository.save(film);
 
         RestTemplate restTemplate = new RestTemplate();

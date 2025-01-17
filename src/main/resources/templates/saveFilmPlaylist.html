@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <title>Film Saved</title>
+    <title>Film Saved to Playlist</title>
 </head>
 <body>
+<main layout:fragment="content">
+    <div class="min-h-screen flex flex-col items-center justify-center">
+        <h1 class="text-4xl font-bold text-center mb-8">Film saved...</h1>
 
-<font size ="10"><h1 align="center">Film saved...</h1></font>
-
-<font size ="10"><p align="right"><a th:href="@{/videothek}" class="back">Continue</a></p></font>
-
-<style>
-    .back{
-        position: absolute;
-        bottom: 1.25rem; left:1.25rem;
-    }
-</style>
+        <a th:href="@{/videothek}"
+           class="fixed bottom-5 left-5 text-blue-500 text-2xl hover:text-blue-700 transition-colors">
+            Continue
+        </a>
+    </div>
+</main>
 </body>
 </html>
