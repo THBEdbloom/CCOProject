@@ -37,12 +37,13 @@ public class S3ServiceTests {
     public void testUploadFile_Success() throws IOException {
         // Arrange
         when(s3Client.putObject(any(PutObjectRequest.class))).thenReturn(new PutObjectResult());
-    
+        
         // Act
         String fileName = s3Service.uploadFile(file);
-    
+        
         // Assert
         assertNotNull(fileName); // Es sollte ein Dateiname zurückgegeben werden
+        System.out.println("Generated file name: " + fileName); // Debugging step to print the generated file name
         assertTrue(fileName.startsWith("test-video.mp4")); // Überprüfe, ob der Dateiname das erwartete Präfix enthält
         verify(s3Client, times(1)).putObject(any(PutObjectRequest.class)); // Überprüfe, dass die S3 putObject-Methode einmal aufgerufen wurde
     }
@@ -62,14 +63,16 @@ public class S3ServiceTests {
     public void testGeneratePresignedUrl_Success() {
         // Arrange
         Duration expiration = Duration.ofMinutes(10);
-        URL mockUrl = mock(URL.class);  // Erstelle ein Mock-URL-Objekt
-        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class))).thenReturn(mockUrl);
-    
+        String expectedUrl = "http://mocked-url.com"; // Assuming your method generates some URL string
+        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class)))
+            .thenReturn(new URL(expectedUrl));  // Return an actual URL object with a mock string URL
+        
         // Act
         String url = s3Service.generatePresignedUrl(objectKey, expiration);
-    
+        
         // Assert
         assertNotNull(url); // Es sollte eine URL zurückgegeben werden
+        assertEquals(expectedUrl, url); // Überprüfe, ob die generierte URL dem erwarteten Wert entspricht
         verify(s3Client, times(1)).generatePresignedUrl(any(GeneratePresignedUrlRequest.class)); // Überprüfe, dass die generatePresignedUrl-Methode einmal aufgerufen wurde
     }
 
