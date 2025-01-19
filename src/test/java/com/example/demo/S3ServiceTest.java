@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 
+import com.example.demo.service.S3Service;
+
 public class S3ServiceTest {
 
     @Mock
