@@ -1,14 +1,13 @@
 package com.example.demo;
 
 import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.mock.web.MockMultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
@@ -26,9 +25,9 @@ public class S3ServiceTest {
     private String objectKey = "test-video.mp4";
     private String contentType = "video/mp4";
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);  // Für Mockito in JUnit 5
         file = new MockMultipartFile("file", "test-video.mp4", contentType, "dummy content".getBytes());
     }
 
@@ -46,13 +45,15 @@ public class S3ServiceTest {
         verify(s3Client, times(1)).putObject(any(PutObjectRequest.class)); // Überprüfe, dass die S3 putObject-Methode einmal aufgerufen wurde
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testUploadFile_InvalidContentType() throws IOException {
         // Arrange
         MockMultipartFile invalidFile = new MockMultipartFile("file", "test.txt", "text/plain", "dummy content".getBytes());
 
-        // Act
-        s3Service.uploadFile(invalidFile); // Sollte eine IllegalArgumentException werfen
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            s3Service.uploadFile(invalidFile); // Sollte eine IllegalArgumentException werfen
+        });
     }
 
     @Test
