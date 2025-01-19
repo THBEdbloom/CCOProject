@@ -156,8 +156,8 @@ class VideothekApplicationTests {
         when(s3Service.uploadFile(file)).thenReturn("mock-file-key");
     
         // Perform POST request
-        mockMvc.perform(multipart("/saveFilm")
-                .file(file)
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/saveFilm") // multipart verwenden
+                .file(file)  // Datei an die Anfrage anhängen
                 .param("name", saveFilmDTO.getName())
                 .param("description", saveFilmDTO.getDescription())
                 .param("laenge", String.valueOf(saveFilmDTO.getLaenge()))
