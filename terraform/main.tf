@@ -187,7 +187,7 @@ resource "aws_network_acl" "public" {
   vpc_id     = aws_vpc.main.id
   subnet_ids = aws_subnet.public[*].id
 
-  # Erlaubt eingehenden HTTP-Verkehr für den ALB (IPv4)
+  # Allow HTTP inbound from anywhere (IPv4)
   ingress {
     protocol   = "tcp"
     rule_no    = 100
@@ -197,7 +197,7 @@ resource "aws_network_acl" "public" {
     to_port    = 80
   }
 
-  # Erlaubt eingehenden HTTP-Verkehr für den ALB
+  # Allow HTTP inbound from anywhere (IPv6)
   ingress {
     protocol        = "tcp"
     rule_no         = 101
@@ -207,6 +207,7 @@ resource "aws_network_acl" "public" {
     to_port         = 80
   }
 
+  # Allow ephemeral ports inbound for return traffic
   ingress {
     protocol   = "tcp"
     rule_no    = 200
@@ -215,17 +216,7 @@ resource "aws_network_acl" "public" {
     from_port  = 1024
     to_port    = 65535
   }
-
-  ingress {
-    protocol        = "tcp"
-    rule_no         = 201
-    action          = "allow"
-    ipv6_cidr_block = "::/0"
-    from_port       = 1024
-    to_port         = 65535
-  }
-
-  # Für debugging, SSH Verbindung öffentlich erlaubt
+  # For debugging, SSH connection public allowed
   /*
   ingress {
     protocol        = "tcp"
@@ -235,36 +226,29 @@ resource "aws_network_acl" "public" {
     from_port       = 22
     to_port         = 22
   }
-    */
-  # Erlaubt ausgehenden Verkehr (IPv4)
+  */
+  ingress {
+    protocol        = "tcp"
+    rule_no         = 201
+    action          = "allow"
+    ipv6_cidr_block = "::/0"
+    from_port       = 1024
+    to_port         = 65535
+  }
+
+
+
+  # Allow all outbound traffic (IPv4)
   egress {
-    protocol   = "tcp"
+    protocol   = -1
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 80
-    to_port    = 80
+    from_port  = 0
+    to_port    = 0
   }
 
-  egress {
-    protocol   = "tcp"
-    rule_no    = 110
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
-  }
-
-  egress {
-    protocol   = "tcp"
-    rule_no    = 200
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 1024
-    to_port    = 65535
-  }
-
-  # Erlaubt ausgehenden Verkehr (IPv6)
+  # Allow all outbound traffic (IPv6)
   egress {
     protocol        = -1
     rule_no         = 101
@@ -324,41 +308,12 @@ resource "aws_network_acl" "private" {
 
   # Allow outbound traffic (IPv4)
   egress {
-    protocol   = "tcp"
+    protocol   = -1
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 80
-    to_port    = 80
-  }
-
-  egress {
-    protocol   = "tcp"
-    rule_no    = 110
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
-  }
-
-
-  egress {
-    protocol   = "tcp"
-    rule_no    = 300
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 1024
-    to_port    = 65535
-  }
-
-  # Allow outbound to RDS
-  egress {
-    protocol   = "tcp"
-    rule_no    = 200
-    action     = "allow"
-    cidr_block = "10.0.0.0/16"
-    from_port  = 3306
-    to_port    = 3306
+    from_port  = 0
+    to_port    = 0
   }
 
   # Allow outbound traffic (IPv6)
@@ -371,11 +326,55 @@ resource "aws_network_acl" "private" {
     to_port         = 0
   }
 
+  # Allow outbound to RDS
+  egress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "10.0.0.0/16"
+    from_port  = 3306
+    to_port    = 3306
+  }
+
   tags = {
     Name = "private-nacl"
   }
 }
+# VPC Endpoint für S3
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${var.aws_region}.s3"
+  vpc_endpoint_type = "Gateway"
 
+  route_table_ids = [aws_route_table.private.id]
+
+  tags = {
+    Name = "s3-endpoint"
+  }
+}
+
+resource "aws_vpc_endpoint_policy" "s3_policy" {
+  vpc_endpoint_id = aws_vpc_endpoint.s3.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowS3Access"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${aws_s3_bucket.backend_uploads.arn}",
+          "${aws_s3_bucket.backend_uploads.arn}/*"
+        ]
+      }
+    ]
+  })
+}
 # S3-Bucket für Anwendungs-Uploads mit Verschlüsselung und Blockierung öffentlicher Zugriffe
 resource "aws_s3_bucket" "backend_uploads" {
   bucket_prefix = "backend-uploads-"
