@@ -1,3 +1,5 @@
+package com.example.demo;
+
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import org.junit.Before;
