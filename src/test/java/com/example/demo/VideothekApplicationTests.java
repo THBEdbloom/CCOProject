@@ -1,14 +1,13 @@
-
 package com.example.demo;
 
 import com.example.demo.controller.VideothekController;
 import com.example.demo.service.VideothekService;
-import com.example.demo.service.S3Service;
 import com.example.demo.entity.Film;
 import com.example.demo.entity.Playlist;
 import com.example.demo.dto.SaveFilmDTO;
 import com.example.demo.repository.FilmRepository;
 import com.example.demo.repository.PlaylistRepository;
+import com.example.demo.service.S3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,14 +19,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 @WebMvcTest(VideothekController.class)
 class VideothekApplicationTests {
@@ -36,16 +34,16 @@ class VideothekApplicationTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private VideothekService videothekService;  // Mock the service
-    
+    private VideothekService videothekService;
+
     @MockBean
-    private FilmRepository filmRepo;           // Mock Film Repository
-    
+    private FilmRepository filmRepo;
+
     @MockBean
-    private PlaylistRepository playlRepo;      // Mock Playlist Repository
-    
+    private PlaylistRepository playlRepo;
+
     @MockBean
-    private S3Service s3Service;               // Mock S3Service
+    private S3Service s3Service;
 
     @BeforeEach
     public void setup() {
@@ -68,7 +66,7 @@ class VideothekApplicationTests {
 
     @Test
     public void testShowStartPage() throws Exception {
-        when(videothekService.getAllFilms()).thenReturn(List.of(new Film("Film1", "Description1", 120)));
+        when(videothekService.getAllFilms()).thenReturn(List.of(new Film(1L, 120, "Film1", "Description1", "videoKey1")));
         
         mockMvc.perform(get("/videothek"))
             .andExpect(status().isOk())
@@ -78,8 +76,8 @@ class VideothekApplicationTests {
 
     @Test
     public void testShowPlaylistPage() throws Exception {
-        when(videothekService.getAllFilmsFromPlaylist()).thenReturn(List.of(new Playlist("Playlist1", "Description1")));
-        
+        when(videothekService.getAllFilmsFromPlaylist()).thenReturn(List.of(new Playlist(1L, 120, "Playlist1", "Description1")));
+
         mockMvc.perform(get("/playlist"))
             .andExpect(status().isOk())
             .andExpect(view().name("playlistPage"))
@@ -89,7 +87,7 @@ class VideothekApplicationTests {
     @Test
     public void testShowFilmDetailsId() throws Exception {
         Long filmId = 1L;
-        Film film = new Film("Film1", "Description1", 120);
+        Film film = new Film(1L, 120, "Film1", "Description1", "videoKey1");
         
         when(videothekService.getFilmById(filmId)).thenReturn(Optional.of(film));
         
@@ -101,11 +99,11 @@ class VideothekApplicationTests {
 
     @Test
     void testShowFilmDetailsIdFromPlaylist() throws Exception {
-        Playlist playlist = new Playlist(1L, "Playlist1", "Beschreibung Playlist");
+        Playlist playlist = new Playlist(1L, 120, "Playlist1", "Beschreibung Playlist");
         when(videothekService.getFilmByIdFromPlaylist(1L)).thenReturn(Optional.of(playlist));
     
         mockMvc.perform(get("/playlistId/1"))
-                .andExpect(status().isOk()) 
+                .andExpect(status().isOk())
                 .andExpect(view().name("detailsPlaylist"))
                 .andExpect(model().attribute("playlist", playlist));
     }
@@ -123,7 +121,7 @@ class VideothekApplicationTests {
 
     @Test
     void testShowFilmDetailsNameFromPlaylist() throws Exception {
-        Playlist playlist = new Playlist(1L, "Playlist1", "Beschreibung Playlist");
+        Playlist playlist = new Playlist(1L, 120, "Playlist1", "Beschreibung Playlist");
         when(videothekService.getFilmByNameFromPlaylist("Playlist1")).thenReturn(Optional.of(playlist));
     
         mockMvc.perform(get("/playlistName/Playlist1"))
@@ -134,7 +132,7 @@ class VideothekApplicationTests {
 
     @Test
     public void testSaveFilm() throws Exception {
-        SaveFilmDTO saveFilmDTO = new SaveFilmDTO("Film1", "Description1", 120, "Drama");
+        SaveFilmDTO saveFilmDTO = new SaveFilmDTO("Film1", "Description1", 120);
         MockMultipartFile file = new MockMultipartFile("file", "film.mp4", "video/mp4", "dummy content".getBytes());
 
         when(s3Service.uploadFile(file)).thenReturn("mock-file-key");
@@ -151,11 +149,11 @@ class VideothekApplicationTests {
 
     @Test
     void testSaveFilmPlaylist() throws Exception {
-        Playlist playlist = new Playlist(1L, "Playlist1", "Beschreibung Playlist");
+        Playlist playlist = new Playlist(1L, 120, "Playlist1", "Beschreibung Playlist");
     
         mockMvc.perform(get("/saveFilmPlaylist")
-                        .flashAttr("playlist", playlist)) 
-                .andExpect(status().isOk()) 
-                .andExpect(view().name("saveFilmPlaylist")); 
+                        .flashAttr("playlist", playlist))
+                .andExpect(status().isOk())
+                .andExpect(view().name("saveFilmPlaylist"));
     }
 }
