@@ -64,8 +64,14 @@ public class S3ServiceTests {
         // Arrange
         Duration expiration = Duration.ofMinutes(10);
         String expectedUrl = "http://mocked-url.com"; // Assuming your method generates some URL string
-        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class)))
-            .thenReturn(new URL(expectedUrl));  // Return an actual URL object with a mock string URL
+        URL mockUrl = null;
+        try {
+            mockUrl = new URL(expectedUrl); // Wrap this in a try-catch block to handle the MalformedURLException
+        } catch (MalformedURLException e) {
+            e.printStackTrace(); // Handle the exception (this should not normally happen with a valid URL string)
+        }
+        
+        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class))).thenReturn(mockUrl);
         
         // Act
         String url = s3Service.generatePresignedUrl(objectKey, expiration);
