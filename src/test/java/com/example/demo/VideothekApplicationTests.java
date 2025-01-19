@@ -39,6 +39,7 @@ import com.example.demo.repository.PlaylistRepository;
 
 // Misc imports
 import org.springframework.mock.web.MockMultipartFile;
+import static org.mockito.Mockito.*;
 
 
 @WebMvcTest(VideothekController.class)
@@ -173,7 +174,7 @@ class VideothekApplicationTests {
         // Simulieren einer IOException
         doThrow(new IOException("File upload failed")).when(s3Service).uploadFile(any(MultipartFile.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/saveFilm")
+        mockMvc.perform(post("/saveFilm")
                         .flashAttr("film", filmDTO)
                         .param("file", "dummyFile"))
                 .andExpect(status().is3xxRedirection())
@@ -196,7 +197,7 @@ class VideothekApplicationTests {
     public void testDeleteFilmPlaylist() throws Exception {
         Playlist playlist = new Playlist(1L, 120, "Playlist Name", "Playlist Description");
     
-        mockMvc.perform(MockMvcRequestBuilders.get("/deleteFilmPlaylist")
+        mockMvc.perform(get("/deleteFilmPlaylist")
                         .flashAttr("playlist", playlist))
                 .andExpect(status().isOk())
                 .andExpect(view().name("deleteFilmPlaylist"));
@@ -206,7 +207,7 @@ class VideothekApplicationTests {
 
     @Test
     public void testShowUploadPage() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/upload"))
+        mockMvc.perform(get("/upload"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("upload"));
     }
@@ -223,7 +224,7 @@ class VideothekApplicationTests {
         when(s3Service.uploadFile(mockFile)).thenReturn(objectKey);
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(6))).thenReturn(presignedUrl);
     
-        mockMvc.perform(MockMvcRequestBuilders.post("/upload")
+        mockMvc.perform(post("/upload")
                         .file("file", mockFile.getBytes()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/upload"))
@@ -240,7 +241,7 @@ class VideothekApplicationTests {
         // Simuliere die URL-Generierung
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(1))).thenReturn(presignedUrl);
     
-        mockMvc.perform(MockMvcRequestBuilders.get("/files/{objectKey}/url", objectKey))
+        mockMvc.perform(get("/files/{objectKey}/url", objectKey))
                 .andExpect(status().isOk())
                 .andExpect(content().string(presignedUrl));
     }
@@ -253,7 +254,7 @@ class VideothekApplicationTests {
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(1)))
                 .thenThrow(new RuntimeException("Failed to generate URL"));
     
-        mockMvc.perform(MockMvcRequestBuilders.get("/files/{objectKey}/url", objectKey))
+        mockMvc.perform(get("/files/{objectKey}/url", objectKey))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Failed to generate URL: Failed to generate URL"));
     }
