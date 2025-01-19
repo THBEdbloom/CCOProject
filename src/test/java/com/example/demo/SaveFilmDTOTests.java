@@ -33,8 +33,8 @@ public class SaveFilmDTOTests {
         SaveFilmDTO saveFilmDTO2 = new SaveFilmDTO("Film Name", 120, "Beschreibung des Films", "video-key-123");
 
         // Act & Assert
-        assertEquals(saveFilmDTO1, saveFilmDTO2);  // Test the equals method
-        assertEquals(saveFilmDTO1.hashCode(), saveFilmDTO2.hashCode()); // Test the hashCode method
+        assertEquals(saveFilmDTO1, saveFilmDTO2);
+        assertEquals(saveFilmDTO1.hashCode(), saveFilmDTO2.hashCode());
     }
 
     @Test
