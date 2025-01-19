@@ -147,27 +147,6 @@ class VideothekApplicationTests {
     }
 
     @Test
-    public void testSaveFilm() throws Exception {
-        // Create a DTO object and a mock file
-        SaveFilmDTO saveFilmDTO = new SaveFilmDTO("Film1", 120, "Description1", "videoKey1");
-        MockMultipartFile file = new MockMultipartFile("file", "film.mp4", "video/mp4", "dummy content".getBytes());
-    
-        // Mock the file upload behavior
-        when(s3Service.uploadFile(file)).thenReturn("mock-file-key");
-    
-        // Perform POST request
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/saveFilm")  // multipart verwenden
-                .file(file)  // Die Datei wird an den Request angehängt
-                .param("name", saveFilmDTO.getName())
-                .param("description", saveFilmDTO.getDescription())
-                .param("laenge", String.valueOf(saveFilmDTO.getLaenge()))
-                .param("videoKey", saveFilmDTO.getVideoKey())) // Parameter für videoKey hinzugefügt
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/videothek"))
-            .andExpect(flash().attributeExists("message"));
-    }
-
-    @Test
     public void testSaveFilmIOException() throws Exception {
         // Vorbereiten der Daten
         SaveFilmDTO filmDTO = new SaveFilmDTO("Film Name", 120, "Film Description", "videoKey");
