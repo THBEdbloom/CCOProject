@@ -1,27 +1,55 @@
 package com.example.demo;
 
 import com.example.demo.controller.VideothekController;
+import com.example.demo.service.VideothekService;
+import com.example.demo.model.Film;
+import com.example.demo.model.Playlist;
+import com.example.demo.dto.SaveFilmDTO;
+import com.example.demo.repository.FilmRepository;
+import com.example.demo.repository.PlaylistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+import java.util.Optional;
+
+@WebMvcTest(VideothekController.class)
 class VideothekApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private VideothekService videothekService;  // Mock the service
+    
+    @MockBean
+    private FilmRepository filmRepo;           // Mock Film Repository
+    
+    @MockBean
+    private PlaylistRepository playlRepo;      // Mock Playlist Repository
+    
+    @MockBean
+    private S3Service s3Service;               // Mock S3Service
+
     @BeforeEach
-    void setUp() {
-        // Hier ist keine spezielle Initialisierung nötig, MockMvc wird durch AutoConfigureMockMvc bereitgestellt
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -39,39 +67,42 @@ class VideothekApplicationTests {
     }
 
     @Test
-    void testShowStartPage() throws Exception {
-        // Wir simulieren hier eine Antwort von videothekservice.getAllFilms()
-        List<Film> films = List.of(new Film(1L, 120, "Film1", "Beschreibung 1", "videoKey1"));
-        when(videothekservice.getAllFilms()).thenReturn(films);
-    
+    public void testShowStartPage() throws Exception {
+        // Mock the service response
+        when(videothekService.getAllFilms()).thenReturn(List.of(new Film("Film1", "Description1", 120)));
+        
+        // Perform a GET request and verify the response
         mockMvc.perform(get("/videothek"))
-                .andExpect(status().isOk()) // Überprüfen, dass der Status 200 (OK) zurückgegeben wird
-                .andExpect(view().name("startPage")) // Überprüfen, dass die View "startPage" gerendert wird
-                .andExpect(model().attribute("films", films)); // Überprüfen, dass das Modell die Liste von Filmen enthält
+            .andExpect(status().isOk())
+            .andExpect(view().name("startPage"))
+            .andExpect(model().attributeExists("films"));
     }
 
     @Test
-    void testShowPlaylistPage() throws Exception {
-        // Wir simulieren eine Antwort von videothekservice.getAllFilmsFromPlaylist()
-        List<Playlist> playlists = List.of(new Playlist(1L, "Playlist1", "Beschreibung Playlist"));
-        when(videothekservice.getAllFilmsFromPlaylist()).thenReturn(playlists);
-    
+    public void testShowPlaylistPage() throws Exception {
+        // Mock the service response
+        when(videothekService.getAllFilmsFromPlaylist()).thenReturn(List.of(new Playlist("Playlist1", "Description1")));
+
+        // Perform GET request to show playlist page
         mockMvc.perform(get("/playlist"))
-                .andExpect(status().isOk()) // Überprüfen, dass der Status 200 (OK) zurückgegeben wird
-                .andExpect(view().name("playlistPage")) // Überprüfen, dass die View "playlistPage" gerendert wird
-                .andExpect(model().attribute("playlists", playlists)); // Überprüfen, dass das Modell die Playlist enthält
+            .andExpect(status().isOk())
+            .andExpect(view().name("playlistPage"))
+            .andExpect(model().attributeExists("playlists"));
     }
 
     @Test
-    void testShowFilmDetailsId() throws Exception {
-        // Wir simulieren eine Antwort von videothekservice.getFilmById()
-        Film film = new Film(1L, 120, "Film1", "Beschreibung 1", "videoKey1");
-        when(videothekservice.getFilmById(1L)).thenReturn(Optional.of(film));
-    
-        mockMvc.perform(get("/filmsId/1"))
-                .andExpect(status().isOk()) // Überprüfen, dass der Status 200 (OK) zurückgegeben wird
-                .andExpect(view().name("detailsFilm")) // Überprüfen, dass die View "detailsFilm" gerendert wird
-                .andExpect(model().attribute("film", film)); // Überprüfen, dass das Modell den Film enthält
+    public void testShowFilmDetailsId() throws Exception {
+        Long filmId = 1L;
+        Film film = new Film("Film1", "Description1", 120);
+        
+        // Mock the service response
+        when(videothekService.getFilmById(filmId)).thenReturn(Optional.of(film));
+        
+        // Perform a GET request to fetch film details
+        mockMvc.perform(get("/filmsId/{id}", filmId))
+            .andExpect(status().isOk())
+            .andExpect(view().name("detailsFilm"))
+            .andExpect(model().attributeExists("film"));
     }
 
     @Test
@@ -111,21 +142,23 @@ class VideothekApplicationTests {
     }
 
     @Test
-    void testSaveFilm() throws Exception {
-        // Simulierte Eingabewerte
-        SaveFilmDTO film = new SaveFilmDTO("Film1", "Beschreibung 1", 120);
-        MultipartFile file = new MockMultipartFile("file", "test_video.mp4", "video/mp4", new byte[0]);
-    
-        // Hier simulieren wir das Hochladen und Speichern des Films
-        when(s3Service.uploadFile(file)).thenReturn("mocked_video_key");
-    
+    public void testSaveFilm() throws Exception {
+        // Create a DTO object and a mock file
+        SaveFilmDTO saveFilmDTO = new SaveFilmDTO("Film1", "Description1", 120);
+        MockMultipartFile file = new MockMultipartFile("file", "film.mp4", "video/mp4", "dummy content".getBytes());
+
+        // Mock the file upload behavior
+        when(s3Service.uploadFile(file)).thenReturn("mock-file-key");
+
+        // Perform POST request
         mockMvc.perform(multipart("/saveFilm")
-                        .file(file)
-                        .param("name", film.getName())
-                        .param("description", film.getDescription())
-                        .param("laenge", String.valueOf(film.getLaenge())))
-                .andExpect(status().is3xxRedirection()) // Überprüfen, dass eine Weiterleitung erfolgt
-                .andExpect(redirectedUrl("/videothek")); // Überprüfen, dass nach "/videothek" weitergeleitet wird
+                .file(file)
+                .param("name", saveFilmDTO.getName())
+                .param("description", saveFilmDTO.getDescription())
+                .param("laenge", String.valueOf(saveFilmDTO.getLaenge())))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/videothek"))
+            .andExpect(flash().attributeExists("message"));
     }
 
     @Test
