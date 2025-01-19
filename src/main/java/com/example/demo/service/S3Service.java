@@ -54,7 +54,7 @@ public class S3Service {
         return fileName;
     }
 
-    private boolean isVideoContentType(String contentType) {
+    public boolean isVideoContentType(String contentType) {
         return Arrays.asList(
                 "video/mp4",
                 "video/mpeg",
