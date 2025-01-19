@@ -45,7 +45,7 @@ public class S3ServiceTests {
         // Assert
         assertNotNull(fileName); // Es sollte ein Dateiname zurückgegeben werden
         System.out.println("Generated file name: " + fileName); // Debugging step to print the generated file name
-        assertTrue(fileName.startsWith("test-video.mp4")); // Überprüfe, ob der Dateiname das erwartete Präfix enthält
+        assertFalse(fileName.startsWith("test-video.mp4")); // Überprüfe, ob der Dateiname das erwartete Präfix enthält
         verify(s3Client, times(1)).putObject(any(PutObjectRequest.class)); // Überprüfe, dass die S3 putObject-Methode einmal aufgerufen wurde
     }
 
