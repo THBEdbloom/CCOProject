@@ -256,8 +256,13 @@ class VideothekApplicationTests {
     void testUploadFile_InvalidContentType() {
         // Arrange
         MockMultipartFile invalidFile = new MockMultipartFile("file", "test.txt", "text/plain", "dummy content".getBytes());
-
+    
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> s3Service.uploadFile(invalidFile));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            s3Service.uploadFile(invalidFile); // Call the method under test
+        });
+    
+        // Assert that the exception message is as expected
+        assertEquals("Invalid file type", thrown.getMessage());
     }
 }
