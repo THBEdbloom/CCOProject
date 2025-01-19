@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.SaveFilmDTO;
 import com.example.demo.entity.Film;
 import com.example.demo.entity.Playlist;
 import com.example.demo.repository.FilmRepository;
@@ -115,7 +116,7 @@ public class VideothekController {
     }
 
     @PostMapping("/saveFilm")
-    public String saveFilm(@ModelAttribute Film film,
+    public String saveFilm(SaveFilmDTO film,
                            @RequestParam("file") MultipartFile file,
                            RedirectAttributes redirectAttributes) {
         try {
@@ -123,8 +124,13 @@ public class VideothekController {
 
             film.setVideoKey(objectKey);
 
+            Film newFilm = new Film();
+            newFilm.setName(film.getName());
+            newFilm.setDescription(film.getDescription());
+            newFilm.setVideoKey(objectKey);
+            newFilm.setLaenge(film.getLaenge());
 
-            filmRepo.save(film);
+            filmRepo.save(newFilm);
 
             redirectAttributes.addFlashAttribute("message",
                     "Film successfully added with video upload!");
