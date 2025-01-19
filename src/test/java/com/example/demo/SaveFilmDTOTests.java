@@ -1,6 +1,7 @@
-package com.example.demo.dto;
+package com.example.demo;
 
 import org.junit.jupiter.api.Test;
+import com.example.demo.dto.SaveFilmDTO;
 
 import static org.junit.jupiter.api.Assertions.*;
 
