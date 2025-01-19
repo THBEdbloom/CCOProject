@@ -28,7 +28,7 @@ resource "tls_private_key" "pk" {
 }
 
 resource "aws_key_pair" "backend" {
-  key_name   = "backend-key"  
+  key_name   = "backend-key"
   public_key = tls_private_key.pk.public_key_openssh
 }
 
@@ -41,7 +41,7 @@ resource "local_file" "ssh_key" {
 # Ermittelt verfügbare Availability Zones für die Region
 data "aws_availability_zones" "available" {
   state = "available"
-  
+
 }
 
 # Hauptkonfiguration des VPC mit IPv4- und IPv6-Unterstützung
@@ -225,7 +225,7 @@ resource "aws_network_acl" "public" {
     to_port         = 65535
   }
 
-  # Für debugging, SSH Verbindung öffentlich erlaubt 
+  # Für debugging, SSH Verbindung öffentlich erlaubt
   /*
   ingress {
     protocol        = "tcp"
@@ -235,16 +235,33 @@ resource "aws_network_acl" "public" {
     from_port       = 22
     to_port         = 22
   }
-  */ 
-
+    */
   # Erlaubt ausgehenden Verkehr (IPv4)
   egress {
-    protocol   = -1
+    protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
+    from_port  = 80
+    to_port    = 80
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
   }
 
   # Erlaubt ausgehenden Verkehr (IPv6)
@@ -267,12 +284,12 @@ resource "aws_network_acl" "private" {
   vpc_id     = aws_vpc.main.id
   subnet_ids = aws_subnet.private[*].id
 
-  # Erlaubt eingehenden Verkehr vom ALB (port 8080, alle Public Subnets)
+  # Allow inbound traffic from ALB (port 8080, all defined public subnets)
   ingress {
       protocol   = "tcp"
       rule_no    = 100
       action     = "allow"
-      cidr_block = "10.0.1.0/24" 
+      cidr_block = "10.0.1.0/24"
       from_port  = 8080
       to_port    = 8080
   }
@@ -281,12 +298,12 @@ resource "aws_network_acl" "private" {
       protocol   = "tcp"
       rule_no    = 101
       action     = "allow"
-      cidr_block = "10.0.2.0/24"  
+      cidr_block = "10.0.2.0/24"
       from_port  = 8080
       to_port    = 8080
   }
 
-  # Erlaubt eingehenden Verkehr für ausgehende Verbindungen
+  # Allow inbound return traffic for outbound connections
   ingress {
     protocol   = "tcp"
     rule_no    = 200
@@ -305,17 +322,46 @@ resource "aws_network_acl" "private" {
     to_port         = 65535
   }
 
-  # Erlaubt ausgehenden Verkehr (IPv4)
+  # Allow outbound traffic (IPv4)
   egress {
-    protocol   = -1
+    protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
+    from_port  = 80
+    to_port    = 80
   }
 
-  # Allow ausgehenden Verkehr(IPv6)
+  egress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 300
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  # Allow outbound to RDS
+  egress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "10.0.0.0/16"
+    from_port  = 3306
+    to_port    = 3306
+  }
+
+  # Allow outbound traffic (IPv6)
   egress {
     protocol        = -1
     rule_no         = 101
@@ -325,16 +371,6 @@ resource "aws_network_acl" "private" {
     to_port         = 0
   }
 
-  # Allow outbound to RDS
-  egress {
-    protocol   = "tcp"
-    rule_no    = 200
-    action     = "allow"
-    cidr_block = "10.0.0.0/16" 
-    from_port  = 3306
-    to_port    = 3306
-  }
-
   tags = {
     Name = "private-nacl"
   }
@@ -342,8 +378,8 @@ resource "aws_network_acl" "private" {
 
 # S3-Bucket für Anwendungs-Uploads mit Verschlüsselung und Blockierung öffentlicher Zugriffe
 resource "aws_s3_bucket" "backend_uploads" {
-  bucket_prefix = "backend-uploads-"  
-  force_destroy = true               
+  bucket_prefix = "backend-uploads-"
+  force_destroy = true
 
   tags = merge(var.tags, {
     Name = "backend-uploads"
@@ -370,6 +406,18 @@ resource "aws_s3_bucket_public_access_block" "backend_uploads" {
   restrict_public_buckets = true
 }
 
+# Output the bucket name
+output "s3_bucket_name" {
+  value = aws_s3_bucket.backend_uploads.id
+  description = "Name of the created S3 bucket"
+}
+
+output "s3_bucket_arn" {
+  value = aws_s3_bucket.backend_uploads.arn
+  description = "ARN of the created S3 bucket"
+}
+
+# Application Load Balancer Konfiguration für Lastverteilung
 resource "aws_lb" "backend" {
   name               = "backend-alb"
   internal           = false
@@ -500,6 +548,8 @@ resource "aws_autoscaling_schedule" "us_east_scale_down_night" {
   autoscaling_group_name = aws_autoscaling_group.backend.name
 }
 */
+
+# Auto Scaling Konfiguration mit verschiedenen Skalierungsrichtlinien
 resource "aws_autoscaling_group" "backend" {
   name               = "autoscaling_backend"
   desired_capacity   = var.asg_desired_capacity
@@ -527,7 +577,8 @@ resource "aws_autoscaling_group" "backend" {
       propagate_at_launch = true
     }
   }
-
+  # Instance Refresh Strategie für Rolling Updates
+  # Ermöglicht sanfte Aktualisierungen der Instanzen
   instance_refresh {
     strategy = "Rolling"
     preferences {
@@ -587,7 +638,7 @@ resource "aws_db_subnet_group" "main" {
   subnet_ids = aws_subnet.private[*].id
 }
 
-# RDS Instance
+# RDS Datenbank-Konfiguration
 resource "aws_db_instance" "database" {
   identifier           = "database"
   allocated_storage    = var.db_allocated_storage
@@ -609,12 +660,13 @@ resource "aws_db_instance" "database" {
 
 }
 
-# Security Groups
+# Sicherheitsgruppen-Konfigurationen für verschiedene Komponenten
 resource "aws_security_group" "database" {
   name        = "database-sg"
   description = "Security group for database"
   vpc_id      = aws_vpc.main.id
 
+  # Erlaubt MySQL-Zugriff nur von Backend-Instanzen
   ingress {
     from_port       = 3306
     to_port         = 3306
@@ -632,7 +684,6 @@ resource "aws_security_group" "backend" {
     description = "Security group for backend EC2 instances"
     vpc_id      = aws_vpc.main.id
 
-    # eingehenden Spring Boot Verkehr
     ingress {
       from_port       = 8080
       to_port         = 8080
@@ -640,13 +691,13 @@ resource "aws_security_group" "backend" {
       security_groups = [aws_security_group.alb.id]
     }
 
-    # Nur für debugging - SSH-Verbindung erlauben
+    # only for debugging - not production
     /*
     ingress {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"] 
+      cidr_blocks = ["0.0.0.0/0"]
     }
     */
     egress {
@@ -668,10 +719,10 @@ resource "aws_security_group" "backend" {
 }
 
 /*
-Testing the IPv6 Connection using public subnet  / public IPs allowed 
+Testing the IPv6 Connection using public subnet  / public IPs allowed
 module "ipv6_test" {
-  source = "./ipv6_test" 
-  
+  source = "./ipv6_test"
+
   vpc_id           = aws_vpc.main.id
   public_subnet_id = aws_subnet.public[0].id
   key_name         = aws_key_pair.backend.key_name
@@ -690,12 +741,3 @@ output "backend_url" {
   value = "http://${aws_lb.backend.dns_name}"
 }
 
-output "s3_bucket_name" {
-  value = aws_s3_bucket.backend_uploads.id
-  description = "Name of the created S3 bucket"
-}
-
-output "s3_bucket_arn" {
-  value = aws_s3_bucket.backend_uploads.arn
-  description = "ARN of the created S3 bucket"
-}
