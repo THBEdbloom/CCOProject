@@ -226,7 +226,7 @@ class VideothekApplicationTests {
     @Test
     public void testSaveFilmSuccess() throws Exception {
         // Erstelle einen Film-DTO mit validen Daten
-        SaveFilmDTO film = new SaveFilmDTO("Title", "Description", 120);
+        SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
         MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
     
         // Mock die S3Service-Methode uploadFile
@@ -246,7 +246,7 @@ class VideothekApplicationTests {
     @Test
     public void testSaveFilmError() throws Exception {
         // Erstelle einen Film-DTO mit validen Daten
-        SaveFilmDTO film = new SaveFilmDTO("Title", "Description", 120);
+        SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
         MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
     
         // Mocke einen Fehler beim Hochladen
