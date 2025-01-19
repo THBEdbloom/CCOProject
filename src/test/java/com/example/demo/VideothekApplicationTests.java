@@ -1,91 +1,75 @@
-// Unit Tests
-package com.example.demo;
+package com.example.demo.controller;
 
 import com.example.demo.entity.Film;
 import com.example.demo.entity.Playlist;
-import com.example.demo.repository.FilmRepository;
-import com.example.demo.repository.PlaylistRepository;
 import com.example.demo.service.VideothekService;
+import com.example.demo.service.S3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
+import java.util.Optional;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class VideothekApplicationTests {
+class VideothekControllerTests {
+
+    private MockMvc mockMvc;
 
     @Mock
-    private FilmRepository filmRepository;
+    private VideothekService videothekService;
 
     @Mock
-    private PlaylistRepository playlistRepository;
+    private S3Service s3Service;
 
     @InjectMocks
-    private VideothekService videothekService;
+    private VideothekController videothekController;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(videothekController).build();
     }
 
     @Test
-    void contextLoads() {
+    void testShowStartPage() throws Exception {
+        when(videothekService.getAllFilms()).thenReturn(List.of(new Film()));
+        mockMvc.perform(get("/videothek"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("startPage"))
+                .andExpect(model().attributeExists("films"));
+        verify(videothekService, times(1)).getAllFilms();
     }
 
     @Test
-    void my_simple_unit_test() {
-        System.out.println("This is a unit test!");
+    void testShowFilmDetailsById_Found() throws Exception {
+        Film film = new Film(1L, 120, "TestFilm", "Description", "videoKey");
+        when(videothekService.getFilmById(1L)).thenReturn(Optional.of(film));
+
+        mockMvc.perform(get("/filmsId/1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("detailsFilm"))
+                .andExpect(model().attributeExists("film"));
     }
 
     @Test
-    void testGetFilmById() {
-        // Arrange
-        Film film = new Film(1, 120, "TestFilm", "Description", "random_video_key");
-        when(filmRepository.findById(1L)).thenReturn(Optional.of(film));
+    void testShowFilmDetailsById_NotFound() throws Exception {
+        when(videothekService.getFilmById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        Optional<Film> result = videothekService.getFilmById(1L);
-
-        // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getName()).isEqualTo("TestFilm");
-        verify(filmRepository, times(1)).findById(1L);
+        mockMvc.perform(get("/filmsId/1"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void testGetFilmByName() {
-        // Arrange
-        Film film = new Film(1, 120, "TestFilm", "Description", "random_video_key");
-        when(filmRepository.findByName("TestFilm")).thenReturn(Optional.of(film));
-
-        // Act
-        Optional<Film> result = videothekService.getFilmByName("TestFilm");
-
-        // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getDescription()).isEqualTo("Description");
-        verify(filmRepository, times(1)).findByName("TestFilm");
-    }
-
-    @Test
-    void testGetAllFilms() {
-        // Arrange
-        Film film1 = new Film(1, 120, "Film1", "Desc1", "random_video_key");
-        Film film2 = new Film(2, 90, "Film2", "Desc2", "random_video_key");
-        when(filmRepository.findAll()).thenReturn(List.of(film1, film2));
-
-        // Act
-        var result = videothekService.getAllFilms();
-
-        // Assert
-        assertThat(result).hasSize(2);
-        verify(filmRepository, times(1)).findAll();
+    void testSaveFilmPlaylist() throws Exception {
+        mockMvc.perform(get("/saveFilmPlaylist"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("saveFilmPlaylist"));
     }
 }
