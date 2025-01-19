@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.7.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>de.thb</groupId>
 	<artifactId>videothek</artifactId>
@@ -121,9 +121,7 @@
 	                	<artifactId>maven-pmd-plugin</artifactId>
 		                <version>3.26.0</version>
 		                <configuration>
-		                    <!-- failOnViolation is actually true by default, but can be disabled -->
 		                    <failOnViolation>true</failOnViolation>
-		                    <!-- printFailingErrors is pretty useful -->
 		                    <printFailingErrors>true</printFailingErrors>
 		                </configuration>
 		                <executions>
@@ -134,12 +132,11 @@
 		                    </execution>
 		                </executions>
 		            </plugin>
-	        	<!-- Ende: PMD Plugin Konfiguration -->
 			<!-- JaCoCo Plugin -->
 		        <plugin>
 		            <groupId>org.jacoco</groupId>
 		            <artifactId>jacoco-maven-plugin</artifactId>
-		            <version>0.8.8</version> <!-- oder die neueste Version -->
+		            <version>0.8.8</version>
 		            <executions>
 		                <execution>
 		                    <goals>
