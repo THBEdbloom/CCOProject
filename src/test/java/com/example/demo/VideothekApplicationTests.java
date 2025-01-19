@@ -2,18 +2,18 @@ package com.example.demo;
 
 // Standard Java imports
 import java.io.IOException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.io.ByteArrayInputStream;
 
 // JUnit & Mockito imports
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 // Spring-specific test imports
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.ui.Model;
@@ -37,11 +39,15 @@ import com.example.demo.dto.SaveFilmDTO;
 import com.example.demo.repository.FilmRepository;
 import com.example.demo.repository.PlaylistRepository;
 
-// Misc imports
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
-import static org.mockito.Mockito.*;
+// AWS S3 imports
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.*;
 
+// Mockito imports (removed duplicates)
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @WebMvcTest(VideothekController.class)
 class VideothekApplicationTests {
@@ -61,9 +67,23 @@ class VideothekApplicationTests {
     @MockBean
     private S3Service s3Service;
 
+    @Mock
+    private AmazonS3 s3Client;
+
+    private MockMultipartFile file;
+    private String bucketName = "test-bucket";
+    private String objectKey = "test-video.mp4";
+    private String contentType = "video/mp4";
+
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+    }
+    
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        file = new MockMultipartFile("file", "test-video.mp4", contentType, "dummy content".getBytes());
     }
 
     @Test
@@ -261,5 +281,67 @@ class VideothekApplicationTests {
                 .andExpect(status().isFound()) // 302 Status für Redirect
                 .andExpect(redirectedUrl("/addfilm")) // Erwartete Umleitung
                 .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
+    }
+
+    @Test
+    public void testUploadFile_Success() throws IOException {
+        // Arrange
+        when(s3Client.putObject(any(PutObjectRequest.class))).thenReturn(new PutObjectResult());
+
+        // Act
+        String fileName = s3Service.uploadFile(file);
+
+        // Assert
+        assertNotNull(fileName); // Es sollte ein Dateiname zurückgegeben werden
+        assertTrue(fileName.startsWith(String.valueOf(System.currentTimeMillis()))); // Es sollte den Timestamp voranstellen
+        verify(s3Client, times(1)).putObject(any(PutObjectRequest.class)); // Überprüfe, dass die S3 putObject-Methode einmal aufgerufen wurde
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUploadFile_InvalidContentType() throws IOException {
+        // Arrange
+        MockMultipartFile invalidFile = new MockMultipartFile("file", "test.txt", "text/plain", "dummy content".getBytes());
+
+        // Act
+        s3Service.uploadFile(invalidFile); // Sollte eine IllegalArgumentException werfen
+    }
+
+    @Test
+    public void testGeneratePresignedUrl_Success() {
+        // Arrange
+        Duration expiration = Duration.ofMinutes(10);
+        URL mockUrl = mock(URL.class);
+        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class))).thenReturn(mockUrl);
+
+        // Act
+        String url = s3Service.generatePresignedUrl(objectKey, expiration);
+
+        // Assert
+        assertNotNull(url); // Es sollte eine URL zurückgegeben werden
+        verify(s3Client, times(1)).generatePresignedUrl(any(GeneratePresignedUrlRequest.class)); // Überprüfe, dass die generatePresignedUrl-Methode einmal aufgerufen wurde
+    }
+
+    @Test
+    public void testIsVideoContentType_Valid() {
+        // Arrange
+        String validContentType = "video/mp4";
+
+        // Act
+        boolean isVideo = s3Service.isVideoContentType(validContentType);
+
+        // Assert
+        assertTrue(isVideo); // Sollte true zurückgeben
+    }
+
+    @Test
+    public void testIsVideoContentType_Invalid() {
+        // Arrange
+        String invalidContentType = "image/jpeg";
+
+        // Act
+        boolean isVideo = s3Service.isVideoContentType(invalidContentType);
+
+        // Assert
+        assertFalse(isVideo); // Sollte false zurückgeben
     }
 }
