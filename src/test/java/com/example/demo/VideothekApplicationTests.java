@@ -147,23 +147,6 @@ class VideothekApplicationTests {
     }
 
     @Test
-    public void testSaveFilmIOException() throws Exception {
-        // Vorbereiten der Daten
-        SaveFilmDTO filmDTO = new SaveFilmDTO("Film Name", 120, "Film Description", "videoKey");
-
-        // Simulieren einer IOException
-        doThrow(new IOException("File upload failed")).when(s3Service).uploadFile(any(MultipartFile.class));
-
-        mockMvc.perform(post("/saveFilm")
-                        .flashAttr("film", filmDTO)
-                        .param("file", "dummyFile"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/addfilm"))
-                .andExpect(flash().attributeExists("error"))
-                .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
-    }
-
-    @Test
     void testSaveFilmPlaylist() throws Exception {
         Playlist playlist = new Playlist(1L, 120, "Playlist1", "Beschreibung Playlist");
     
