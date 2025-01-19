@@ -39,6 +39,7 @@ import com.example.demo.repository.PlaylistRepository;
 
 // Misc imports
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import static org.mockito.Mockito.*;
 
 
