@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.model.*;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+import java.net.MalformedURLException;
 
 import com.example.demo.service.S3Service;
 
@@ -70,12 +71,12 @@ public class S3ServiceTests {
         } catch (MalformedURLException e) {
             e.printStackTrace(); // Handle the exception (this should not normally happen with a valid URL string)
         }
-        
+    
         when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class))).thenReturn(mockUrl);
-        
+    
         // Act
         String url = s3Service.generatePresignedUrl(objectKey, expiration);
-        
+    
         // Assert
         assertNotNull(url); // Es sollte eine URL zurückgegeben werden
         assertEquals(expectedUrl, url); // Überprüfe, ob die generierte URL dem erwarteten Wert entspricht
