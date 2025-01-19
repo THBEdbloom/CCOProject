@@ -99,5 +99,5 @@ Um das Terraform Skript auszuführen muss folgendes in Reihenfolge durchgeführt
 2. terraform init
 3. terraform apply 
 
-Dazu zu sagen, ist das, wenn aws configure verwendet wird 
+
 
