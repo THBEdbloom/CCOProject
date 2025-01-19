@@ -76,7 +76,7 @@ class VideothekControllerTests {
         when(playlRepo.save(any(Playlist.class))).thenReturn(playlist);
 
         mockMvc.perform(get("/saveFilmPlaylist"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("saveFilmPlaylist"));
+                .andExpect(status().is3xxRedirection()) // Expect redirect
+                .andExpect(redirectedUrl("/playlist")); // URL nach Redirect
     }
 }
