@@ -4,6 +4,7 @@ import com.example.demo.entity.Film;
 import com.example.demo.entity.Playlist;
 import com.example.demo.service.VideothekService;
 import com.example.demo.service.S3Service;
+import com.example.demo.repository.PlaylistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -27,6 +28,9 @@ class VideothekControllerTests {
 
     @Mock
     private S3Service s3Service;
+
+    @Mock
+    private PlaylistRepository playlRepo;
 
     @InjectMocks
     private VideothekController videothekController;
@@ -68,6 +72,9 @@ class VideothekControllerTests {
 
     @Test
     void testSaveFilmPlaylist() throws Exception {
+        Playlist playlist = new Playlist();
+        when(playlRepo.save(any(Playlist.class))).thenReturn(playlist);
+
         mockMvc.perform(get("/saveFilmPlaylist"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("saveFilmPlaylist"));
