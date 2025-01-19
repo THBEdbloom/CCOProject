@@ -60,18 +60,9 @@ class VideothekApplicationTests {
     @MockBean
     private S3Service s3Service;
 
-    @Mock
-    private AmazonS3 s3Client;
-
-    private MockMultipartFile file;
-    private String bucketName = "test-bucket";
-    private String objectKey = "test-video.mp4";
-    private String contentType = "video/mp4";
-
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        file = new MockMultipartFile("file", "test-video.mp4", contentType, "dummy content".getBytes());
     }
 
     @Test
