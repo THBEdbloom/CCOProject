@@ -194,23 +194,24 @@ class VideothekApplicationTests {
 
     @Test
     public void testHandleFileUpload() throws Exception {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.getOriginalFilename()).thenReturn("testVideo.mp4");
-    
+        // Erstelle eine Mock-Datei
+        MockMultipartFile mockFile = new MockMultipartFile("file", "testVideo.mp4", "video/mp4", "dummy content".getBytes());
+        
         String objectKey = "testObjectKey";
         String presignedUrl = "https://s3.amazonaws.com/testObjectKey";
-    
+        
         // Simuliere erfolgreiche Upload- und URL-Generierung
         when(s3Service.uploadFile(mockFile)).thenReturn(objectKey);
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(6))).thenReturn(presignedUrl);
-    
-        mockMvc.perform(post("/upload")
-                        .file("file", mockFile.getBytes()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/upload"))
-                .andExpect(flash().attributeExists("message"))
-                .andExpect(flash().attribute("message", "You successfully uploaded testVideo.mp4!"))
-                .andExpect(flash().attribute("fileUrl", presignedUrl));
+        
+        // Verwende multipart() anstelle von file() auf MockHttpServletRequestBuilder
+        mockMvc.perform(multipart("/upload")  // multipart() statt MockHttpServletRequestBuilder.file()
+                            .file(mockFile))  // Hier wird die Datei hinzugefügt
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/upload"))
+                    .andExpect(flash().attributeExists("message"))
+                    .andExpect(flash().attribute("message", "You successfully uploaded testVideo.mp4!"))
+                    .andExpect(flash().attribute("fileUrl", presignedUrl));
     }
 
     @Test
