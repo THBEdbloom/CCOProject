@@ -20,7 +20,11 @@ Unsere Aufgabe war es, eine AWS-basierte Infrastruktur mit mindestens drei AWS-D
 Für die Bearbeitung der Aufgaben haben wir ein bestehendes Projekt aus dem vorherigen Semester als Grundlage genutzt. Das Projekt basiert auf dem Spring Boot Framework und wird mit Maven als Build-Management-Tool verwaltet. Neben den Grundkomponenten werden Thymeleaf als Template-Engine zur Darstellung der Daten sowie Spring Actuator zur Überwachung der Anwendung und Durchführung von Health Checks verwendet. Zur Verwaltung der Datenbankzugriffe kommt Spring JPA als Object-Relational-Mapping (ORM) Framework zum Einsatz. Ein S3-Bucket kommt dabei zur Nutzung durch eine Hochlade-Funktion und das Bereitstellen dieser Videos.
 
 # CI/CD
+Diese CI/CD-Pipeline wird bei jedem Push oder Pull Request zum main-Branch ausgelöst. Zuerst wird ein MySQL-Docker-Container gestartet, um die benötigte Datenbank bereitzustellen, und es wird sichergestellt, dass MySQL betriebsbereit ist. Danach wird der Code mit der actions/checkout-Aktion aus dem Repository geladen, und JDK 17 wird eingerichtet, um die Java-Anwendung zu bauen.
 
+Im nächsten Schritt erfolgt eine Analyse des Codes mit PMD, das potenzielle Codestil-Probleme und Fehler aufdeckt. Die generierten Berichte werden als Artefakte gespeichert. Anschließend wird der Code mit SonarCloud überprüft, um die Codequalität und Sicherheitslücken zu analysieren.
+
+Abschließend wird ein Docker-Image der Anwendung gebaut und auf Docker Hub gepusht. Die Authentifizierung für Docker Hub erfolgt sicher über GitHub Secrets. Die Pipeline stellt somit sicher, dass der Code vor der Bereitstellung gründlich getestet und überprüft wird und ein funktionsfähiges Docker-Image erzeugt wird.
 
 # Cloud-Architektur
 ## Grundaufbau
