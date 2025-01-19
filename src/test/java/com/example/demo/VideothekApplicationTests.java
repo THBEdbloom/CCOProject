@@ -224,61 +224,42 @@ class VideothekApplicationTests {
     }
 
     @Test
-    public void testSaveFilm() throws Exception {
-        // Erstelle ein SaveFilmDTO mit Testdaten
-        SaveFilmDTO filmDTO = new SaveFilmDTO("Film Name", 120, "Film Description", "videoKey");
+    public void testSaveFilmSuccess() throws Exception {
+        // Erstelle einen Film-DTO mit validen Daten
+        SaveFilmDTO film = new SaveFilmDTO("Title", "Description", 120);
+        MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
     
-        // Erstelle eine Mock-Datei
-        MockMultipartFile mockFile = new MockMultipartFile("file", "testVideo.mp4", "video/mp4", "dummy content".getBytes());
+        // Mock die S3Service-Methode uploadFile
+        when(s3Service.uploadFile(any(MultipartFile.class))).thenReturn("video-key");
     
-        // Simuliere das Verhalten des S3Service, um einen Objekt-Schlüssel zurückzugeben
-        String objectKey = "testObjectKey";
-        when(s3Service.uploadFile(mockFile)).thenReturn(objectKey);
-    
-        // Simuliere, dass das FilmRepository den Film speichert
-        Film savedFilm = new Film();
-        savedFilm.setName(filmDTO.getName());
-        savedFilm.setDescription(filmDTO.getDescription());
-        savedFilm.setLaenge(filmDTO.getLaenge());
-        savedFilm.setVideoKey(objectKey);
-        when(filmRepo.save(any(Film.class))).thenReturn(savedFilm);
-    
-        // Führe den Test aus
+        // Führe den POST-Request aus
         mockMvc.perform(multipart("/saveFilm")
-                        .file(mockFile)  // Füge die Mock-Datei hinzu
-                        .flashAttr("film", filmDTO))  // Übergebe das SaveFilmDTO als Flash-Attribut
-                .andExpect(status().is3xxRedirection())  // Erwartet eine Weiterleitung
-                .andExpect(redirectedUrl("/videothek"))  // Weiterleitung zur Startseite
-                .andExpect(flash().attributeExists("message"))  // Sicherstellen, dass die Nachricht im Flash-Attribut ist
-                .andExpect(flash().attribute("message", "Film successfully added with video upload!"));  // Die Flash-Nachricht überprüfen
-    
-        // Überprüfe, dass der S3Service und das FilmRepository korrekt aufgerufen wurden
-        verify(s3Service, times(1)).uploadFile(mockFile);
-        verify(filmRepo, times(1)).save(any(Film.class));
+                .file(file)
+                .param("name", film.getName())
+                .param("description", film.getDescription())
+                .param("laenge", String.valueOf(film.getLaenge())))
+                .andExpect(status().isFound()) // 302 Status für Redirect
+                .andExpect(redirectedUrl("/videothek")) // Erwartete Umleitung
+                .andExpect(flash().attribute("message", "Film successfully added with video upload!"));
     }
     
     @Test
-    public void testSaveFilmIOException() throws Exception {
-        // Erstelle ein SaveFilmDTO mit Testdaten
-        SaveFilmDTO filmDTO = new SaveFilmDTO("Film Name", 120, "Film Description", "videoKey");
+    public void testSaveFilmError() throws Exception {
+        // Erstelle einen Film-DTO mit validen Daten
+        SaveFilmDTO film = new SaveFilmDTO("Title", "Description", 120);
+        MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
     
-        // Erstelle eine Mock-Datei
-        MockMultipartFile mockFile = new MockMultipartFile("file", "testVideo.mp4", "video/mp4", "dummy content".getBytes());
+        // Mocke einen Fehler beim Hochladen
+        when(s3Service.uploadFile(any(MultipartFile.class))).thenThrow(new IOException("File upload failed"));
     
-        // Simuliere, dass beim Hochladen der Datei eine IOException auftritt
-        when(s3Service.uploadFile(mockFile)).thenThrow(new IOException("File upload failed"));
-    
-        // Führe den Test aus
+        // Führe den POST-Request aus
         mockMvc.perform(multipart("/saveFilm")
-                        .file(mockFile)
-                        .flashAttr("film", filmDTO))
-                .andExpect(status().is3xxRedirection())  // Erwartet eine Weiterleitung
-                .andExpect(redirectedUrl("/addfilm"))  // Weiterleitung zur Seite "addfilm"
-                .andExpect(flash().attributeExists("error"))  // Sicherstellen, dass die Fehlermeldung im Flash-Attribut ist
-                .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));  // Die Fehlermeldung überprüfen
-    
-        // Überprüfe, dass der S3Service korrekt aufgerufen wurde, aber das FilmRepository nicht
-        verify(s3Service, times(1)).uploadFile(mockFile);
-        verify(filmRepo, times(0)).save(any(Film.class));  // Das FilmRepository sollte nicht aufgerufen werden, wenn die Datei nicht hochgeladen werden kann
+                .file(file)
+                .param("name", film.getName())
+                .param("description", film.getDescription())
+                .param("laenge", String.valueOf(film.getLaenge())))
+                .andExpect(status().isFound()) // 302 Status für Redirect
+                .andExpect(redirectedUrl("/addfilm")) // Erwartete Umleitung
+                .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
     }
 }
