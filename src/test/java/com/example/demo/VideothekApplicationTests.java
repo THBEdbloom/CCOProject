@@ -147,44 +147,6 @@ class VideothekApplicationTests {
     }
 
     @Test
-    public void testSaveFilm() throws Exception {
-        // Create a DTO object and a mock file
-        SaveFilmDTO saveFilmDTO = new SaveFilmDTO("Film1", 120, "Description1", "videoKey1"); // Reihenfolge angepasst
-        MockMultipartFile file = new MockMultipartFile("file", "film.mp4", "video/mp4", "dummy content".getBytes());
-    
-        // Mock the file upload behavior
-        when(s3Service.uploadFile(file)).thenReturn("mock-file-key");
-    
-        // Perform POST request
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/saveFilm") // multipart verwenden
-                .file(file)  // Datei an die Anfrage anhängen
-                .param("name", saveFilmDTO.getName())
-                .param("description", saveFilmDTO.getDescription())
-                .param("laenge", String.valueOf(saveFilmDTO.getLaenge()))
-                .param("videoKey", saveFilmDTO.getVideoKey()))  // Parameter für videoKey hinzugefügt
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/videothek"))
-            .andExpect(flash().attributeExists("message"));
-    }
-
-    @Test
-    public void testSaveFilmIOException() throws Exception {
-        // Vorbereiten der Daten
-        SaveFilmDTO filmDTO = new SaveFilmDTO("Film Name", 120, "Film Description", "videoKey");
-
-        // Simulieren einer IOException
-        doThrow(new IOException("File upload failed")).when(s3Service).uploadFile(any(MultipartFile.class));
-
-        mockMvc.perform(post("/saveFilm")
-                        .flashAttr("film", filmDTO)
-                        .param("file", "dummyFile"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/addfilm"))
-                .andExpect(flash().attributeExists("error"))
-                .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
-    }
-
-    @Test
     void testSaveFilmPlaylist() throws Exception {
         Playlist playlist = new Playlist(1L, 120, "Playlist1", "Beschreibung Playlist");
     
@@ -215,23 +177,24 @@ class VideothekApplicationTests {
 
     @Test
     public void testHandleFileUpload() throws Exception {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.getOriginalFilename()).thenReturn("testVideo.mp4");
-    
+        // Erstelle eine Mock-Datei
+        MockMultipartFile mockFile = new MockMultipartFile("file", "testVideo.mp4", "video/mp4", "dummy content".getBytes());
+        
         String objectKey = "testObjectKey";
         String presignedUrl = "https://s3.amazonaws.com/testObjectKey";
-    
+        
         // Simuliere erfolgreiche Upload- und URL-Generierung
         when(s3Service.uploadFile(mockFile)).thenReturn(objectKey);
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(6))).thenReturn(presignedUrl);
-    
-        mockMvc.perform(post("/upload")
-                        .file("file", mockFile.getBytes()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/upload"))
-                .andExpect(flash().attributeExists("message"))
-                .andExpect(flash().attribute("message", "You successfully uploaded testVideo.mp4!"))
-                .andExpect(flash().attribute("fileUrl", presignedUrl));
+        
+        // Verwende multipart() anstelle von file() auf MockHttpServletRequestBuilder
+        mockMvc.perform(multipart("/upload")  // multipart() statt MockHttpServletRequestBuilder.file()
+                            .file(mockFile))  // Hier wird die Datei hinzugefügt
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/upload"))
+                    .andExpect(flash().attributeExists("message"))
+                    .andExpect(flash().attribute("message", "You successfully uploaded testVideo.mp4!"))
+                    .andExpect(flash().attribute("fileUrl", presignedUrl));
     }
 
     @Test
@@ -258,5 +221,45 @@ class VideothekApplicationTests {
         mockMvc.perform(get("/files/{objectKey}/url", objectKey))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Failed to generate URL: Failed to generate URL"));
+    }
+
+    @Test
+    public void testSaveFilmSuccess() throws Exception {
+        // Erstelle einen Film-DTO mit validen Daten
+        SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
+        MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
+    
+        // Mock die S3Service-Methode uploadFile
+        when(s3Service.uploadFile(any(MultipartFile.class))).thenReturn("video-key");
+    
+        // Führe den POST-Request aus
+        mockMvc.perform(multipart("/saveFilm")
+                .file(file)
+                .param("name", film.getName())
+                .param("description", film.getDescription())
+                .param("laenge", String.valueOf(film.getLaenge())))
+                .andExpect(status().isFound()) // 302 Status für Redirect
+                .andExpect(redirectedUrl("/videothek")) // Erwartete Umleitung
+                .andExpect(flash().attribute("message", "Film successfully added with video upload!"));
+    }
+    
+    @Test
+    public void testSaveFilmError() throws Exception {
+        // Erstelle einen Film-DTO mit validen Daten
+        SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
+        MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
+    
+        // Mocke einen Fehler beim Hochladen
+        when(s3Service.uploadFile(any(MultipartFile.class))).thenThrow(new IOException("File upload failed"));
+    
+        // Führe den POST-Request aus
+        mockMvc.perform(multipart("/saveFilm")
+                .file(file)
+                .param("name", film.getName())
+                .param("description", film.getDescription())
+                .param("laenge", String.valueOf(film.getLaenge())))
+                .andExpect(status().isFound()) // 302 Status für Redirect
+                .andExpect(redirectedUrl("/addfilm")) // Erwartete Umleitung
+                .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
     }
 }
