@@ -1,41 +1,44 @@
 package com.example.demo;
 
+// Standard Java imports
+import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
+
+// JUnit & Mockito imports
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+// Spring-specific test imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
+// Project-specific imports
 import com.example.demo.controller.VideothekController;
 import com.example.demo.service.VideothekService;
+import com.example.demo.service.S3Service;
 import com.example.demo.entity.Film;
 import com.example.demo.entity.Playlist;
 import com.example.demo.dto.SaveFilmDTO;
 import com.example.demo.repository.FilmRepository;
 import com.example.demo.repository.PlaylistRepository;
-import com.example.demo.service.S3Service;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
+
+// Misc imports
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.http.MediaType;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Optional;
-import java.util.List;
-import java.io.IOException;
-import java.time.Duration;
 
 @WebMvcTest(VideothekController.class)
 class VideothekApplicationTests {
