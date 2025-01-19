@@ -2,7 +2,8 @@
 
 1. [Projektübersicht](#projektübersicht)
 2. [CI/CD](#cicd)
-3. [Cloud-Architektur](#cloud-architektur)
+3. [Dockerfile](#df)
+4. [Cloud-Architektur](#cloud-architektur)
     1. [Grundaufbau](#grundaufbau)
     2. [Absicherung](#absicherung)
         1. [NACL](#nacl)
@@ -25,6 +26,9 @@ Diese CI/CD-Pipeline wird bei jedem Push oder Pull Request zum main-Branch ausge
 Im nächsten Schritt erfolgt eine Analyse des Codes mit PMD, das potenzielle Codestil-Probleme und Fehler aufdeckt. Die generierten Berichte werden als Artefakte gespeichert. Anschließend wird der Code mit SonarCloud überprüft, um die Codequalität und Sicherheitslücken zu analysieren.
 
 Abschließend wird ein Docker-Image der Anwendung gebaut und auf Docker Hub gepusht. Die Authentifizierung für Docker Hub erfolgt sicher über GitHub Secrets. Die Pipeline stellt somit sicher, dass der Code vor der Bereitstellung gründlich getestet und überprüft wird und ein funktionsfähiges Docker-Image erzeugt wird.
+
+# Dockerfile
+In diesem Dockerfile wird ein Docker-Image für eine Java-Anwendung basierend auf der neuesten Version von Ubuntu erstellt. Zunächst wird das Basis-Image ubuntu:latest verwendet, um eine minimalistische Linux-Umgebung bereitzustellen. Anschließend wird ein Label hinzugefügt, um den Maintainer des Dockerfiles anzugeben. Im nächsten Schritt werden mit apt-get die benötigten Pakete installiert, darunter Java 17 (JRE ohne grafische Oberfläche) und curl, um HTTP-Anfragen durchführen zu können. Zudem wird Maven installiert, ein Build-Tool, das in Java-Projekten häufig verwendet wird. Danach wird die lokale JAR-Datei der Anwendung (videothek-0.0.1-SNAPSHOT.jar) aus dem target-Verzeichnis in das Docker-Image kopiert und als /service.jar abgelegt. Der Port 8080 wird freigegeben, da die Anwendung wahrscheinlich auf diesem Port läuft. Zum Schluss wird der Einstiegspunkt des Containers so festgelegt, dass beim Starten des Containers automatisch die JAR-Datei mit dem Befehl java -jar /service.jar ausgeführt wird. Insgesamt sorgt dieses Dockerfile dafür, dass eine vollständig konzipierte und funktionierende Java-Anwendung in einem Docker-Container läuft.
 
 # Cloud-Architektur
 ## Grundaufbau
