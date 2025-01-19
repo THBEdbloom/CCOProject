@@ -1,9 +1,9 @@
 provider "aws" {
   region     = var.aws_region
   # Zugangsdaten können über Umgebungsvariablen oder AWS CLI-Konfiguration bereitgestellt werden
-  # access_key = ""
-  # secret_key = ""
-  # token = ""
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+  token = var.aws_session_token
 }
 
 # Benutzerdefiniertedaten-Template für EC2-Instanzen
@@ -15,6 +15,9 @@ data "template_file" "user_data" {
     aws_s3_bucket = aws_s3_bucket.backend_uploads.id
     db_username = var.db_username
     db_password = var.db_password
+    aws_access_key = var.aws_access_key
+    aws_secret_key = var.aws_secret_key
+    aws_session_token = var.aws_session_token
   }
 }
 
@@ -283,7 +286,7 @@ resource "aws_network_acl" "private" {
       to_port    = 8080
   }
 
-  # Allow inbound return traffic for outbound connections
+  # Erlaubt eingehenden Verkehr für ausgehende Verbindungen
   ingress {
     protocol   = "tcp"
     rule_no    = 200
@@ -302,7 +305,7 @@ resource "aws_network_acl" "private" {
     to_port         = 65535
   }
 
-  # Allow outbound traffic (IPv4)
+  # Erlaubt ausgehenden Verkehr (IPv4)
   egress {
     protocol   = -1
     rule_no    = 100
@@ -312,7 +315,7 @@ resource "aws_network_acl" "private" {
     to_port    = 0
   }
 
-  # Allow outbound traffic (IPv6)
+  # Allow ausgehenden Verkehr(IPv6)
   egress {
     protocol        = -1
     rule_no         = 101
@@ -366,18 +369,6 @@ resource "aws_s3_bucket_public_access_block" "backend_uploads" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
-
-# Output the bucket name
-output "s3_bucket_name" {
-  value = aws_s3_bucket.backend_uploads.id
-  description = "Name of the created S3 bucket"
-}
-
-output "s3_bucket_arn" {
-  value = aws_s3_bucket.backend_uploads.arn
-  description = "ARN of the created S3 bucket"
-}
-
 
 resource "aws_lb" "backend" {
   name               = "backend-alb"
@@ -640,7 +631,8 @@ resource "aws_security_group" "backend" {
     name        = "backend-sg"
     description = "Security group for backend EC2 instances"
     vpc_id      = aws_vpc.main.id
-  
+
+    # eingehenden Spring Boot Verkehr
     ingress {
       from_port       = 8080
       to_port         = 8080
@@ -648,14 +640,15 @@ resource "aws_security_group" "backend" {
       security_groups = [aws_security_group.alb.id]
     }
 
-    # only for debugging - not production 
+    # Nur für debugging - SSH-Verbindung erlauben
+    /*
     ingress {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"] 
     }
-
+    */
     egress {
       from_port   = 0
       to_port     = 0
@@ -697,4 +690,12 @@ output "backend_url" {
   value = "http://${aws_lb.backend.dns_name}"
 }
 
+output "s3_bucket_name" {
+  value = aws_s3_bucket.backend_uploads.id
+  description = "Name of the created S3 bucket"
+}
 
+output "s3_bucket_arn" {
+  value = aws_s3_bucket.backend_uploads.arn
+  description = "ARN of the created S3 bucket"
+}

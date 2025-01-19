@@ -6,9 +6,9 @@ DB_USERNAME="${db_username}"
 DB_PASSWORD="${db_password}"
 AWS_S3_BUCKET="${aws_s3_bucket}"
 
-AWS_ACCESS_KEY=$(aws configure get aws_access_key_id)
-AWS_SECRET_KEY=$(aws configure get aws_secret_access_key)
-AWS_SESSION_TOKEN=$(aws configure get aws_session_token)
+AWS_ACCESS_KEY="${aws_access_key}"
+AWS_SECRET_KEY="${aws_secret_key}"
+AWS_SESSION_TOKEN="${aws_session_token}"
 
 sudo apt-get install -y \
     apt-transport-https \

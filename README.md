@@ -83,10 +83,7 @@ Zukünftige Verbesserungen könnten SSL/TLS-Integration, erweiterte Überwachung
 
 ## Terraform-Skript
 
-Die Voraussetzung, um das Terraform-Skript ausführen zu können ist es notwendig entweder:
-
-1. die AWS-Credentials durch ```aws configure``` zu setzen
-2. oder diese manuell in den vorgegeben Variablen festzulegen.
+Die Voraussetzung, um das Terraform-Skript ausführen zu können ist es notwendig die Credentials für AWS in secrets.auto.tfvars zu setzten mit ```aws_access_key```, ```aws_secret_key```, ```aws_session_token```. Dies hat den Grund, dass keine IAM-Regeln erstellt werden können und die Variablen für die EC2-Instanzen bekannt sein müssen.
 
 Um das Terraform Skript auszuführen muss folgendes in Reihenfolge durchgeführt werden:
 
@@ -94,4 +91,5 @@ Um das Terraform Skript auszuführen muss folgendes in Reihenfolge durchgeführt
 2. terraform init
 3. terraform apply 
 
+Dazu zu sagen, ist das, wenn aws configure verwendet wird 
 
