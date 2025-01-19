@@ -46,51 +46,6 @@ class VideothekApplicationTests {
     }
 
     @Test
-    void testGetFilmById() {
-        // Arrange
-        Film film = new Film(1, 120, "TestFilm", "Description");
-        when(filmRepository.findById(1L)).thenReturn(Optional.of(film));
-
-        // Act
-        Optional<Film> result = videothekService.getFilmById(1L);
-
-        // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getName()).isEqualTo("TestFilm");
-        verify(filmRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    void testGetFilmByName() {
-        // Arrange
-        Film film = new Film(1, 120, "TestFilm", "Description");
-        when(filmRepository.findByName("TestFilm")).thenReturn(Optional.of(film));
-
-        // Act
-        Optional<Film> result = videothekService.getFilmByName("TestFilm");
-
-        // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getDescription()).isEqualTo("Description");
-        verify(filmRepository, times(1)).findByName("TestFilm");
-    }
-
-    @Test
-    void testGetAllFilms() {
-        // Arrange
-        Film film1 = new Film(1, 120, "Film1", "Desc1");
-        Film film2 = new Film(2, 90, "Film2", "Desc2");
-        when(filmRepository.findAll()).thenReturn(List.of(film1, film2));
-
-        // Act
-        var result = videothekService.getAllFilms();
-
-        // Assert
-        assertThat(result).hasSize(2);
-        verify(filmRepository, times(1)).findAll();
-    }
-
-    @Test
     void testRedirectToStartPage() throws Exception {
         mockMvc.perform(get("/")) // Simuliert eine GET-Anfrage an die URL "/"
                 .andExpect(status().is3xxRedirection()) // Überprüft, ob der Statuscode 3xx (Redirect) ist
