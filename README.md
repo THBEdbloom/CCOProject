@@ -2,7 +2,8 @@
 
 1. [Projektübersicht](#projektübersicht)
 2. [CI/CD](#cicd)
-3. [Cloud-Architektur](#cloud-architektur)
+3. [Dockerfile](#dockerfile)
+4. [Cloud-Architektur](#cloud-architektur)
     1. [Grundaufbau](#grundaufbau)
     2. [Absicherung](#absicherung)
         1. [NACL](#nacl)
@@ -20,7 +21,14 @@ Unsere Aufgabe war es, eine AWS-basierte Infrastruktur mit mindestens drei AWS-D
 Für die Bearbeitung der Aufgaben haben wir ein bestehendes Projekt aus dem vorherigen Semester als Grundlage genutzt. Das Projekt basiert auf dem Spring Boot Framework und wird mit Maven als Build-Management-Tool verwaltet. Neben den Grundkomponenten werden Thymeleaf als Template-Engine zur Darstellung der Daten sowie Spring Actuator zur Überwachung der Anwendung und Durchführung von Health Checks verwendet. Zur Verwaltung der Datenbankzugriffe kommt Spring JPA als Object-Relational-Mapping (ORM) Framework zum Einsatz. Ein S3-Bucket kommt dabei zur Nutzung durch eine Hochlade-Funktion und das Bereitstellen dieser Videos.
 
 # CI/CD
+Die CI/CD-Pipeline wird bei jedem Push oder Pull Request zum main-Branch ausgelöst. Zuerst wird ein MySQL-Docker-Container gestartet, um die benötigte Datenbank bereitzustellen, und es wird sichergestellt, dass MySQL betriebsbereit ist. Danach wird der Code mit der actions/checkout-Aktion aus dem Repository geladen, und JDK 17 wird eingerichtet, um die Java-Anwendung zu bauen.
 
+Im nächsten Schritt erfolgt eine Analyse des Codes mit PMD, das potenzielle Codestil-Probleme und Fehler aufdeckt. Die generierten Berichte werden als Artefakte gespeichert. Anschließend wird der Code mit SonarCloud überprüft, um die Codequalität und Sicherheitslücken zu analysieren.
+
+Abschließend wird ein Docker-Image der Anwendung gebaut und auf Docker Hub gepusht. Die Authentifizierung für Docker Hub erfolgt sicher über GitHub Secrets. Die Pipeline stellt somit sicher, dass der Code vor der Bereitstellung gründlich getestet und überprüft wird und ein funktionsfähiges Docker-Image erzeugt wird.
+
+# Dockerfile
+Im Dockerfile wird ein Docker-Image für eine Java-Anwendung basierend auf der neuesten Version von Ubuntu erstellt. Zunächst wird das Basis-Image ubuntu:latest verwendet, um eine minimalistische Linux-Umgebung bereitzustellen. Anschließend wird ein Label hinzugefügt, um den Maintainer des Dockerfiles anzugeben. Im nächsten Schritt werden mit apt-get die benötigten Pakete installiert, darunter Java 17 (JRE ohne grafische Oberfläche) und curl, um HTTP-Anfragen durchführen zu können. Zudem wird Maven installiert, ein Build-Tool, das in Java-Projekten häufig verwendet wird. Danach wird die lokale JAR-Datei der Anwendung (videothek-0.0.1-SNAPSHOT.jar) aus dem target-Verzeichnis in das Docker-Image kopiert und als /service.jar abgelegt. Der Port 8080 wird freigegeben, da die Anwendung auf diesem Port läuft. Zum Schluss wird der Einstiegspunkt des Containers so festgelegt, dass beim Starten des Containers automatisch die JAR-Datei mit dem Befehl java -jar /service.jar ausgeführt wird. Insgesamt sorgt dieses Dockerfile dafür, dass eine vollständig konzipierte und funktionierende Java-Anwendung in einem Docker-Container läuft.
 
 # Cloud-Architektur
 ## Grundaufbau
