@@ -177,17 +177,14 @@ class VideothekApplicationTests {
 
     @Test
     public void testHandleFileUpload() throws Exception {
-        // Erstelle eine Mock-Datei
         MockMultipartFile mockFile = new MockMultipartFile("file", "testVideo.mp4", "video/mp4", "dummy content".getBytes());
         
         String objectKey = "testObjectKey";
         String presignedUrl = "https://s3.amazonaws.com/testObjectKey";
         
-        // Simuliere erfolgreiche Upload- und URL-Generierung
         when(s3Service.uploadFile(mockFile)).thenReturn(objectKey);
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(6))).thenReturn(presignedUrl);
         
-        // Verwende multipart() anstelle von file() auf MockHttpServletRequestBuilder
         mockMvc.perform(multipart("/upload")
                             .file(mockFile))
                     .andExpect(status().is3xxRedirection())
@@ -214,7 +211,6 @@ class VideothekApplicationTests {
     public void testGetFileUrlFailure() throws Exception {
         String objectKey = "testObjectKey";
     
-        // Simuliere eine Ausnahme
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(1)))
                 .thenThrow(new RuntimeException("Failed to generate URL"));
     
@@ -225,14 +221,11 @@ class VideothekApplicationTests {
 
     @Test
     public void testSaveFilmSuccess() throws Exception {
-        // Erstelle einen Film-DTO mit validen Daten
         SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
         MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
     
-        // Mock die S3Service-Methode uploadFile
         when(s3Service.uploadFile(any(MultipartFile.class))).thenReturn("video-key");
     
-        // Führe den POST-Request aus
         mockMvc.perform(multipart("/saveFilm")
                 .file(file)
                 .param("name", film.getName())
@@ -245,14 +238,11 @@ class VideothekApplicationTests {
     
     @Test
     public void testSaveFilmError() throws Exception {
-        // Erstelle einen Film-DTO mit validen Daten
         SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
         MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
     
-        // Mocke einen Fehler beim Hochladen
         when(s3Service.uploadFile(any(MultipartFile.class))).thenThrow(new IOException("File upload failed"));
     
-        // Führe den POST-Request aus
         mockMvc.perform(multipart("/saveFilm")
                 .file(file)
                 .param("name", film.getName())
