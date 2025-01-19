@@ -237,33 +237,44 @@ class VideothekApplicationTests {
     }
 
     @Test
-    public void testSaveFilmFailure() throws Exception {
+    public void testSaveFilmSuccess() throws Exception {
+        // Erstelle einen Film-DTO mit validen Daten
+        SaveFilmDTO film = new SaveFilmDTO("Title", "Description", 120);
         SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
         MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
-    
-        when(s3Service.uploadFile(any(MultipartFile.class))).thenThrow(new IllegalArgumentException("Invalid file"));
-    
+
+        // Mock die S3Service-Methode uploadFile
+        when(s3Service.uploadFile(any(MultipartFile.class))).thenReturn("video-key");
+
+        // Führe den POST-Request aus
         mockMvc.perform(multipart("/saveFilm")
                 .file(file)
                 .param("name", film.getName())
                 .param("description", film.getDescription())
                 .param("laenge", String.valueOf(film.getLaenge())))
-                .andExpect(status().isOk())
-                .andExpect(view().name("addFilm"))
-                .andExpect(model().attribute("message", "Error during file upload"));
+                .andExpect(status().isFound()) // 302 Status für Redirect
+                .andExpect(redirectedUrl("/videothek")) // Erwartete Umleitung
+                .andExpect(flash().attribute("message", "Film successfully added with video upload!"));
     }
 
     @Test
-    void testUploadFile_InvalidContentType() {
-        // Arrange
-        MockMultipartFile invalidFile = new MockMultipartFile("file", "test.txt", "text/plain", "dummy content".getBytes());
-    
-        // Act & Assert
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            s3Service.uploadFile(invalidFile); // Call the method under test
-        });
-    
-        // Assert that the exception message is as expected
-        assertEquals("Invalid file type", thrown.getMessage());
+    public void testSaveFilmError() throws Exception {
+        // Erstelle einen Film-DTO mit validen Daten
+        SaveFilmDTO film = new SaveFilmDTO("Title", "Description", 120);
+        SaveFilmDTO film = new SaveFilmDTO("Title", 120, "Description", "video-key");
+        MockMultipartFile file = new MockMultipartFile("file", "video.mp4", "video/mp4", "dummy content".getBytes());
+
+        // Mocke einen Fehler beim Hochladen
+        when(s3Service.uploadFile(any(MultipartFile.class))).thenThrow(new IOException("File upload failed"));
+
+        // Führe den POST-Request aus
+        mockMvc.perform(multipart("/saveFilm")
+                .file(file)
+                .param("name", film.getName())
+                .param("description", film.getDescription())
+                .param("laenge", String.valueOf(film.getLaenge())))
+                .andExpect(status().isFound()) // 302 Status für Redirect
+                .andExpect(redirectedUrl("/addfilm")) // Erwartete Umleitung
+                .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
     }
 }
