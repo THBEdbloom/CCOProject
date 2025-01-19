@@ -14,7 +14,7 @@ import java.time.Duration;
 
 import com.example.demo.service.S3Service;
 
-public class S3ServiceTest {
+public class S3ServiceTests {
 
     @Mock
     private AmazonS3 s3Client;
