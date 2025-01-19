@@ -165,7 +165,7 @@ class VideothekApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(view().name("deleteFilmPlaylist"));
     
-        verify(playlRepo, times(1)).delete(playlist);  // Vergewissere dich, dass die Methode aufgerufen wurde
+        verify(playlRepo, times(1)).delete(playlist);
     }
 
     @Test
@@ -188,8 +188,8 @@ class VideothekApplicationTests {
         when(s3Service.generatePresignedUrl(objectKey, Duration.ofHours(6))).thenReturn(presignedUrl);
         
         // Verwende multipart() anstelle von file() auf MockHttpServletRequestBuilder
-        mockMvc.perform(multipart("/upload")  // multipart() statt MockHttpServletRequestBuilder.file()
-                            .file(mockFile))  // Hier wird die Datei hinzugefügt
+        mockMvc.perform(multipart("/upload")
+                            .file(mockFile))
                     .andExpect(status().is3xxRedirection())
                     .andExpect(redirectedUrl("/upload"))
                     .andExpect(flash().attributeExists("message"))
@@ -258,8 +258,8 @@ class VideothekApplicationTests {
                 .param("name", film.getName())
                 .param("description", film.getDescription())
                 .param("laenge", String.valueOf(film.getLaenge())))
-                .andExpect(status().isFound()) // 302 Status für Redirect
-                .andExpect(redirectedUrl("/addfilm")) // Erwartete Umleitung
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/addfilm"))
                 .andExpect(flash().attribute("error", "Error uploading file: File upload failed"));
     }
 }
