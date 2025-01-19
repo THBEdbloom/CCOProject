@@ -21,7 +21,7 @@ public class S3ServiceTests {
     private AmazonS3 s3Client;
 
     @InjectMocks
-    private S3Service s3Service; // Deine Service-Klasse, die uploadFile und generatePresignedUrl enthält
+    private S3Service s3Service;
 
     private MockMultipartFile file;
     private String bucketName = "test-bucket";
@@ -30,7 +30,7 @@ public class S3ServiceTests {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);  // Für Mockito in JUnit 5
+        MockitoAnnotations.openMocks(this);
         file = new MockMultipartFile("file", "test-video.mp4", contentType, "dummy content".getBytes());
     }
 
@@ -43,10 +43,10 @@ public class S3ServiceTests {
         String fileName = s3Service.uploadFile(file);
         
         // Assert
-        assertNotNull(fileName); // Es sollte ein Dateiname zurückgegeben werden
-        System.out.println("Generated file name: " + fileName); // Debugging step to print the generated file name
-        assertFalse(fileName.startsWith("test-video.mp4")); // Überprüfe, ob der Dateiname das erwartete Präfix enthält
-        verify(s3Client, times(1)).putObject(any(PutObjectRequest.class)); // Überprüfe, dass die S3 putObject-Methode einmal aufgerufen wurde
+        assertNotNull(fileName);
+        System.out.println("Generated file name: " + fileName);
+        assertFalse(fileName.startsWith("test-video.mp4"));
+        verify(s3Client, times(1)).putObject(any(PutObjectRequest.class));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class S3ServiceTests {
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
-            s3Service.uploadFile(invalidFile); // Sollte eine IllegalArgumentException werfen
+            s3Service.uploadFile(invalidFile);
         });
     }
 
@@ -64,12 +64,12 @@ public class S3ServiceTests {
     public void testGeneratePresignedUrl_Success() {
         // Arrange
         Duration expiration = Duration.ofMinutes(10);
-        String expectedUrl = "http://mocked-url.com"; // Assuming your method generates some URL string
+        String expectedUrl = "http://mocked-url.com";
         URL mockUrl = null;
         try {
-            mockUrl = new URL(expectedUrl); // Wrap this in a try-catch block to handle the MalformedURLException
+            mockUrl = new URL(expectedUrl);
         } catch (MalformedURLException e) {
-            e.printStackTrace(); // Handle the exception (this should not normally happen with a valid URL string)
+            e.printStackTrace();
         }
     
         when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class))).thenReturn(mockUrl);
@@ -78,9 +78,9 @@ public class S3ServiceTests {
         String url = s3Service.generatePresignedUrl(objectKey, expiration);
     
         // Assert
-        assertNotNull(url); // Es sollte eine URL zurückgegeben werden
-        assertEquals(expectedUrl, url); // Überprüfe, ob die generierte URL dem erwarteten Wert entspricht
-        verify(s3Client, times(1)).generatePresignedUrl(any(GeneratePresignedUrlRequest.class)); // Überprüfe, dass die generatePresignedUrl-Methode einmal aufgerufen wurde
+        assertNotNull(url);
+        assertEquals(expectedUrl, url);
+        verify(s3Client, times(1)).generatePresignedUrl(any(GeneratePresignedUrlRequest.class));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class S3ServiceTests {
         boolean isVideo = s3Service.isVideoContentType(validContentType);
 
         // Assert
-        assertTrue(isVideo); // Sollte true zurückgeben
+        assertTrue(isVideo);
     }
 
     @Test
@@ -104,6 +104,6 @@ public class S3ServiceTests {
         boolean isVideo = s3Service.isVideoContentType(invalidContentType);
 
         // Assert
-        assertFalse(isVideo); // Sollte false zurückgeben
+        assertFalse(isVideo);
     }
 }
