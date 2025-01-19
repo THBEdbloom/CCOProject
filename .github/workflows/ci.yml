@@ -75,7 +75,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B verify \
+          mvn clean install -DskipTests
+          mvn verify \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=THBEdbloom_CCOProject \
             -Dsonar.organization=thbedbloom \
